@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Entra ID Security Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script>
+(function() {
+  var cdns = [
+    'https://unpkg.com/@azure/msal-browser@3.28.1/lib/msal-browser.min.js',
+    'https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js',
+    'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js'
+  ];
+  var idx = 0;
+  function tryNext() {
+    if (idx >= cdns.length) {
+      window._msalLoadFailed = true;
+      return;
+    }
+    var s = document.createElement('script');
+    s.src = cdns[idx++];
+    s.onerror = tryNext;
+    document.head.appendChild(s);
+  }
+  tryNext();
+})();
+</script>
+<style>
+  :root {
+    --bg: #07090f;
+    --surface: #0e1117;
+    --surface2: #141720;
+    --border: #1e2330;
+    --accent: #00c2ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,194,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,194,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+  body::after { content: ''; position: fixed; top: -200px; left: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+
+  /* LOGIN */
+  #login-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 100; background: var(--bg); padding: 24px; }
+  .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 48px; max-width: 480px; width: 100%; position: relative; overflow: hidden; }
+  .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3)); }
+  .login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .login-logo svg { width: 36px; height: 36px; }
+  .login-logo span { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .login-card h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .login-card p { color: var(--muted); font-family: var(--mono); font-size: 13px; margin-bottom: 32px; line-height: 1.6; }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); font-family: var(--mono); font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--muted); }
+  .btn-signin { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent2), var(--accent)); border: none; border-radius: 8px; color: #fff; font-family: var(--sans); font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s; }
+  .btn-signin:hover { opacity: 0.88; }
+  .btn-signin:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
+  .security-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 20px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 12px 14px; font-family: var(--mono); font-size: 11px; color: var(--accent3); line-height: 1.5; }
+  .err-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px 14px; font-family: var(--mono); font-size: 12px; color: var(--danger); margin-top: 16px; display: none; line-height: 1.5; }
+
+  /* DASHBOARD */
+  #dashboard { display: none; position: relative; z-index: 1; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; border-bottom: 1px solid var(--border); background: rgba(14,17,23,0.8); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-logo { display: flex; align-items: center; gap: 10px; }
+  .header-logo svg { width: 28px; height: 28px; }
+  .header-logo span { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+  .user-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .last-refresh { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .btn-refresh { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; color: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s; }
+  .btn-refresh:hover { border-color: var(--accent); }
+  .btn-signout { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--muted); font-family: var(--sans); font-size: 13px; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+  .btn-signout:hover { color: var(--danger); border-color: var(--danger); }
+  main { padding: 40px; max-width: 1600px; margin: 0 auto; }
+
+  /* STATS */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+  .stat-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+  .stat-pill:hover { border-color: var(--accent); }
+  .stat-pill::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .stat-pill.blue::before   { background: var(--accent); }
+  .stat-pill.purple::before { background: var(--accent2); }
+  .stat-pill.green::before  { background: var(--accent3); }
+  .stat-pill.amber::before  { background: var(--warn); }
+  .stat-pill.red::before    { background: var(--danger); }
+  .stat-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-value { font-size: 36px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .stat-pill.blue .stat-value   { color: var(--accent); }
+  .stat-pill.purple .stat-value { color: #a78bfa; }
+  .stat-pill.green .stat-value  { color: var(--accent3); }
+  .stat-pill.amber .stat-value  { color: var(--warn); }
+  .stat-pill.red .stat-value    { color: var(--danger); }
+  .stat-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* SECTIONS */
+  .sections { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .section:nth-child(1){animation-delay:.05s} .section:nth-child(2){animation-delay:.10s} .section:nth-child(3){animation-delay:.15s} .section:nth-child(4){animation-delay:.20s}
+  .section-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+  .section-title-wrap { display: flex; align-items: center; gap: 10px; }
+  .section-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .badge { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 100px; }
+  .badge-blue   { background: rgba(0,194,255,0.1);   color: var(--accent); }
+  .badge-warn   { background: rgba(245,158,11,0.12);  color: var(--warn); }
+  .badge-danger { background: rgba(239,68,68,0.12);   color: var(--danger); }
+  .badge-green  { background: rgba(16,185,129,0.1);   color: var(--accent3); }
+  .badge-muted  { background: var(--surface2);        color: var(--muted); }
+  .section-body { padding: 16px 24px 20px; }
+
+  /* TABLE */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .tbl td { padding: 11px 0; border-bottom: 1px solid rgba(30,35,48,0.6); font-size: 13px; vertical-align: middle; }
+  .tbl tr:last-child td { border-bottom: none; }
+
+  /* PILLS */
+  .pill { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+  .pill-green { background: rgba(16,185,129,0.12); color: var(--accent3); }
+  .pill-red   { background: rgba(239,68,68,0.12);  color: var(--danger); }
+  .pill-amber { background: rgba(245,158,11,0.12);  color: var(--warn); }
+  .pill-blue  { background: rgba(0,194,255,0.1);   color: var(--accent); }
+  .pill-muted { background: var(--surface2);        color: var(--muted); }
+
+  /* ROWS */
+  .risk-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(30,35,48,0.6); font-size: 13px; }
+  .risk-row:last-child { border-bottom: none; }
+  .risk-left { display: flex; flex-direction: column; gap: 2px; }
+  .risk-user { font-weight: 600; }
+  .risk-detail { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .pim-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid rgba(30,35,48,0.6); font-size: 13px; }
+  .pim-row:last-child { border-bottom: none; }
+  .pim-role { font-weight: 600; }
+  .pim-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .pim-right { display: flex; align-items: center; gap: 10px; }
+
+  /* MFA GRID */
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .method-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .method-card.enabled { border-color: rgba(16,185,129,0.25); }
+  .method-card.disabled { opacity: 0.6; }
+  .method-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .method-state { font-family: var(--mono); font-size: 11px; }
+
+  /* STATES */
+  .loading-state { display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 12px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty-state { text-align: center; padding: 40px 0; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .perm-warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; padding: 14px 16px; font-family: var(--mono); font-size: 12px; color: var(--warn); line-height: 1.7; }
+
+  @media (max-width: 1024px) { .sections { grid-template-columns: 1fr; } .stat-row { grid-template-columns: repeat(2,1fr); } main { padding: 24px; } header { padding: 16px 24px; } }
+  @media (max-width: 600px)  { .stat-row { grid-template-columns: 1fr 1fr; } .method-grid { grid-template-columns: 1fr; } header { flex-wrap: wrap; gap: 12px; } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="8" fill="#0f1623"/><path d="M18 6L6 12V24L18 30L30 24V12L18 6Z" stroke="#00c2ff" stroke-width="1.5" fill="none"/><path d="M18 6V30M6 12L30 24M30 12L6 24" stroke="#00c2ff" stroke-width="0.75" opacity="0.4"/><circle cx="18" cy="18" r="4" fill="#7c3aed"/></svg>
+      <span>EntraVault</span>
+    </div>
+    <h2>Security Dashboard</h2>
+    <p>Enter your App Registration details, then sign in with your Microsoft account. No client secret required.</p>
+
+    <div class="field">
+      <label>Client ID (App Registration)</label>
+      <input id="inp-client" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Tenant ID</label>
+      <input id="inp-tenant" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off"/>
+    </div>
+
+    <button class="btn-signin" id="btn-signin" onclick="signIn()">
+      <svg class="ms-logo" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+      Sign in with Microsoft
+    </button>
+
+    <div class="security-note">
+      🔒 Uses Microsoft's official MSAL library. Your credentials go only to Microsoft — never to any third party. A popup will open for sign-in.
+    </div>
+    <div id="login-err" class="err-msg"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <div class="header-left">
+      <div class="header-logo">
+        <svg viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="8" fill="#0f1623"/><path d="M18 6L6 12V24L18 30L30 24V12L18 6Z" stroke="#00c2ff" stroke-width="1.5" fill="none"/><path d="M18 6V30M6 12L30 24M30 12L6 24" stroke="#00c2ff" stroke-width="0.75" opacity="0.4"/><circle cx="18" cy="18" r="4" fill="#7c3aed"/></svg>
+        <span>EntraVault</span>
+      </div>
+      <div class="user-badge" id="user-badge">—</div>
+    </div>
+    <div class="header-right">
+      <span class="last-refresh" id="last-refresh">Not loaded</span>
+      <button class="btn-refresh" onclick="loadAll()">⟳ Refresh</button>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stat-row">
+      <div class="stat-pill blue">
+        <div class="stat-label">Conditional Access</div>
+        <div class="stat-value" id="stat-ca">—</div>
+        <div class="stat-sub" id="stat-ca-sub">loading…</div>
+      </div>
+      <div class="stat-pill amber">
+        <div class="stat-label">Auth Methods Enabled</div>
+        <div class="stat-value" id="stat-mfa">—</div>
+        <div class="stat-sub" id="stat-mfa-sub">loading…</div>
+      </div>
+      <div class="stat-pill red">
+        <div class="stat-label">Risky Users</div>
+        <div class="stat-value" id="stat-risk">—</div>
+        <div class="stat-sub" id="stat-risk-sub">loading…</div>
+      </div>
+      <div class="stat-pill purple">
+        <div class="stat-label">PIM Eligible Roles</div>
+        <div class="stat-value" id="stat-pim">—</div>
+        <div class="stat-sub" id="stat-pim-sub">loading…</div>
+      </div>
+    </div>
+
+    <div class="sections">
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon" style="background:rgba(0,194,255,0.1)">🔐</div>
+            <span class="section-title">Conditional Access Policies</span>
+          </div>
+          <span class="badge badge-blue" id="badge-ca">…</span>
+        </div>
+        <div class="section-body">
+          <div class="loading-state" id="load-ca"><div class="spinner"></div>Fetching policies…</div>
+          <table class="tbl" id="tbl-ca" style="display:none"><thead><tr><th>Policy Name</th><th>State</th><th>Users</th></tr></thead><tbody id="body-ca"></tbody></table>
+          <div class="empty-state" id="empty-ca" style="display:none">No policies found</div>
+          <div id="err-ca" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon" style="background:rgba(245,158,11,0.1)">🔑</div>
+            <span class="section-title">MFA & Authentication Methods</span>
+          </div>
+          <span class="badge badge-warn" id="badge-mfa">…</span>
+        </div>
+        <div class="section-body">
+          <div class="loading-state" id="load-mfa"><div class="spinner"></div>Fetching auth methods…</div>
+          <div class="method-grid" id="grid-mfa" style="display:none"></div>
+          <div class="empty-state" id="empty-mfa" style="display:none">No auth methods data</div>
+          <div id="err-mfa" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon" style="background:rgba(239,68,68,0.1)">⚠️</div>
+            <span class="section-title">Identity Protection — Risky Users</span>
+          </div>
+          <span class="badge badge-danger" id="badge-risk">…</span>
+        </div>
+        <div class="section-body">
+          <div class="loading-state" id="load-risk"><div class="spinner"></div>Fetching risky users…</div>
+          <div id="list-risk" style="display:none"></div>
+          <div class="empty-state" id="empty-risk" style="display:none">✅ No risky users detected</div>
+          <div id="err-risk" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-icon" style="background:rgba(124,58,237,0.1)">👑</div>
+            <span class="section-title">Privileged Identity Management</span>
+          </div>
+          <span class="badge badge-muted" id="badge-pim">…</span>
+        </div>
+        <div class="section-body">
+          <div class="loading-state" id="load-pim"><div class="spinner"></div>Fetching PIM assignments…</div>
+          <div id="list-pim" style="display:none"></div>
+          <div class="empty-state" id="empty-pim" style="display:none">No PIM assignments found</div>
+          <div id="err-pim" style="display:none"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+let msalInstance = null;
+let activeAccount = null;
+
+const SCOPES = [
+  'https://graph.microsoft.com/Policy.Read.All',
+  'https://graph.microsoft.com/IdentityRiskyUser.Read.All',
+  'https://graph.microsoft.com/RoleManagement.Read.Directory',
+  'https://graph.microsoft.com/Directory.Read.All'
+];
+
+function getMsalCtor() {
+  if (typeof msalBrowser !== "undefined") return msalBrowser.PublicClientApplication;
+  if (typeof msal !== "undefined") return msal.PublicClientApplication;
+  throw new Error("Microsoft authentication library failed to load. Try disabling ad blockers or extensions and refresh the page.");
+}
+function initMsal(clientId, tenantId) {
+  const Ctor = getMsalCtor();
+  msalInstance = new Ctor({
+    auth: {
+      clientId,
+      authority: "https://login.microsoftonline.com/" + tenantId,
+      redirectUri: window.location.href.split("?")[0].split("#")[0]
+    },
+    cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
+  });
+}
+
+async function signIn() {
+  const clientId = document.getElementById('inp-client').value.trim();
+  const tenantId = document.getElementById('inp-tenant').value.trim();
+  document.getElementById('login-err').style.display = 'none';
+
+  if (!clientId || !tenantId) { showLoginErr('Both Client ID and Tenant ID are required.'); return; }
+
+  const btn = document.getElementById('btn-signin');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="font-size:13px">Opening Microsoft login…</span>';
+
+  try {
+    initMsal(clientId, tenantId);
+    await msalInstance.initialize();
+    const result = await msalInstance.loginPopup({ scopes: SCOPES, prompt: 'select_account' });
+    activeAccount = result.account;
+    msalInstance.setActiveAccount(activeAccount);
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('user-badge').textContent = activeAccount.username || activeAccount.name || 'Signed in';
+    loadAll();
+  } catch(e) {
+    const msg =
+      e.errorCode === 'user_cancelled'      ? 'Sign-in was cancelled.' :
+      e.errorCode === 'popup_window_error'  ? 'Popup was blocked — please allow popups for this page and try again.' :
+      e.errorCode === 'interaction_required'? 'Interaction required — please try again.' :
+      (e.message || String(e));
+    showLoginErr(msg);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="ms-logo" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg> Sign in with Microsoft';
+  }
+}
+
+function showLoginErr(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+async function signOut() {
+  try { if (msalInstance) await msalInstance.logoutPopup(); } catch(e) {}
+  activeAccount = null; msalInstance = null;
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function getToken() {
+  try {
+    const r = await msalInstance.acquireTokenSilent({ scopes: SCOPES, account: activeAccount });
+    return r.accessToken;
+  } catch(e) {
+    const r = await msalInstance.acquireTokenPopup({ scopes: SCOPES, account: activeAccount });
+    return r.accessToken;
+  }
+}
+
+async function gFetch(path, beta) {
+  const token = await getToken();
+  const base = beta ? 'https://graph.microsoft.com/beta' : 'https://graph.microsoft.com/v1.0';
+  const r = await fetch(base + path, { headers: { Authorization: 'Bearer ' + token } });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.error?.message || ('HTTP ' + r.status));
+  }
+  return r.json();
+}
+
+async function loadAll() {
+  document.getElementById('last-refresh').textContent = 'Refreshing…';
+  resetLoaders();
+  await Promise.allSettled([loadCA(), loadMFA(), loadRisk(), loadPIM()]);
+  document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+function resetLoaders() {
+  ['ca','mfa','risk','pim'].forEach(k => {
+    show('load-'+k);
+    ['tbl-'+k,'grid-'+k,'list-'+k,'empty-'+k,'err-'+k,'body-'+k].forEach(id => hide(id));
+  });
+}
+
+function show(id) { const e=document.getElementById(id); if(e) e.style.display=''; }
+function hide(id) { const e=document.getElementById(id); if(e) e.style.display='none'; }
+
+function permErr(key, badge, stat, sub, perm, msg) {
+  hide('load-'+key);
+  const el = document.getElementById('err-'+key);
+  el.innerHTML = '<div class="perm-warn">⚠ Access denied or insufficient permissions.<br><strong>Required role/permission:</strong> ' + perm + (msg ? '<br><small style="opacity:0.65">' + esc(msg) + '</small>' : '') + '</div>';
+  el.style.display = 'block';
+  const b = document.getElementById(badge); if(b) { b.textContent='No access'; b.className='badge badge-danger'; }
+  const sv = document.getElementById(stat); if(sv) sv.textContent='!';
+  const ss = document.getElementById(sub);  if(ss) ss.textContent='Permission error';
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function loadCA() {
+  try {
+    const data = await gFetch('/identity/conditionalAccess/policies');
+    const ps = data.value || [];
+    hide('load-ca');
+    const enabled = ps.filter(p=>p.state==='enabled').length;
+    document.getElementById('stat-ca').textContent = ps.length;
+    document.getElementById('stat-ca-sub').textContent = enabled + ' enabled';
+    document.getElementById('badge-ca').textContent = ps.length + ' total';
+    if (!ps.length) { show('empty-ca'); return; }
+    document.getElementById('body-ca').innerHTML = ps.map(p => {
+      const cls = p.state==='enabled'?'pill-green':p.state==='disabled'?'pill-red':'pill-amber';
+      const inc  = p.conditions?.users?.includeUsers||[];
+      const grps = p.conditions?.users?.includeGroups||[];
+      const lbl  = inc.includes('All')?'All Users':grps.length?grps.length+' group(s)':inc.length?inc.length+' user(s)':'—';
+      return '<tr><td>'+esc(p.displayName)+'</td><td><span class="pill '+cls+'">'+p.state+'</span></td><td style="color:var(--muted);font-family:var(--mono);font-size:12px">'+lbl+'</td></tr>';
+    }).join('');
+    document.getElementById('tbl-ca').style.display='table';
+  } catch(e) { permErr('ca','badge-ca','stat-ca','stat-ca-sub','Policy.Read.All',e.message); }
+}
+
+async function loadMFA() {
+  try {
+    const data = await gFetch('/policies/authenticationMethodsPolicy', true);
+    hide('load-mfa');
+    const methods = data.authenticationMethodConfigurations||[];
+    const enabled = methods.filter(m=>m.state==='enabled').length;
+    document.getElementById('stat-mfa').textContent = enabled;
+    document.getElementById('stat-mfa-sub').textContent = 'of '+methods.length+' methods';
+    document.getElementById('badge-mfa').textContent = enabled+'/'+methods.length+' enabled';
+    if (!methods.length) { show('empty-mfa'); return; }
+    const names = {
+      'MicrosoftAuthenticatorAuthenticationMethodConfiguration':'Microsoft Authenticator',
+      'FidoAuthenticationMethodConfiguration':'FIDO2 Security Keys',
+      'SmsAuthenticationMethodConfiguration':'SMS',
+      'TemporaryAccessPassAuthenticationMethodConfiguration':'Temp Access Pass',
+      'SoftwareOathAuthenticationMethodConfiguration':'Software OATH (TOTP)',
+      'VoiceAuthenticationMethodConfiguration':'Voice Call',
+      'EmailAuthenticationMethodConfiguration':'Email OTP',
+      'X509CertificateAuthenticationMethodConfiguration':'Certificate-Based Auth',
+      'HardwareOathAuthenticationMethodConfiguration':'Hardware OATH Token',
+    };
+    const grid = document.getElementById('grid-mfa');
+    grid.innerHTML = methods.map(m => {
+      const on  = m.state==='enabled';
+      const key = (m['@odata.type']||'').replace('#microsoft.graph.','');
+      const nm  = names[key]||m.id||key||'Unknown';
+      return '<div class="method-card '+(on?'enabled':'disabled')+'"><div class="method-name">'+esc(nm)+'</div><div class="method-state" style="color:'+(on?'var(--accent3)':'var(--muted)')+'">'+( on?'● Enabled':'○ Disabled')+'</div></div>';
+    }).join('');
+    grid.style.display='grid';
+  } catch(e) { permErr('mfa','badge-mfa','stat-mfa','stat-mfa-sub','Policy.Read.All',e.message); }
+}
+
+async function loadRisk() {
+  try {
+    const data = await gFetch("/identityProtection/riskyUsers?$filter=riskState ne 'dismissed'&$top=20&$orderby=riskLastUpdatedDateTime desc", true);
+    hide('load-risk');
+    const users = data.value||[];
+    const high  = users.filter(u=>u.riskLevel==='high').length;
+    document.getElementById('stat-risk').textContent = users.length;
+    document.getElementById('stat-risk-sub').textContent = high+' high risk';
+    document.getElementById('badge-risk').textContent = users.length?users.length+' users':'None';
+    if (!users.length) { show('empty-risk'); return; }
+    const rc = {high:'pill-red',medium:'pill-amber',low:'pill-blue',none:'pill-muted',hidden:'pill-muted'};
+    const list = document.getElementById('list-risk');
+    list.innerHTML = users.map(u => {
+      const date = u.riskLastUpdatedDateTime?new Date(u.riskLastUpdatedDateTime).toLocaleDateString():'—';
+      return '<div class="risk-row"><div class="risk-left"><span class="risk-user">'+esc(u.userDisplayName||u.userPrincipalName||'—')+'</span><span class="risk-detail">'+esc(u.userPrincipalName||'')+' · '+date+'</span></div><div style="display:flex;gap:8px;align-items:center"><span class="pill '+(rc[u.riskLevel]||'pill-muted')+'">'+( u.riskLevel||'—')+'</span><span class="pill pill-muted" style="font-size:10px">'+esc(u.riskDetail||'none')+'</span></div></div>';
+    }).join('');
+    list.style.display='block';
+  } catch(e) { permErr('risk','badge-risk','stat-risk','stat-risk-sub','IdentityRiskyUser.Read.All',e.message); }
+}
+
+async function loadPIM() {
+  try {
+    const [elig, act] = await Promise.all([
+      gFetch('/roleManagement/directory/roleEligibilitySchedules?$expand=roleDefinition,principal&$top=20', true),
+      gFetch('/roleManagement/directory/roleAssignmentSchedules?$expand=roleDefinition,principal&$top=20', true)
+    ]);
+    hide('load-pim');
+    const ei = elig.value||[], ai = act.value||[];
+    document.getElementById('stat-pim').textContent = ei.length;
+    document.getElementById('stat-pim-sub').textContent = ai.length+' active';
+    document.getElementById('badge-pim').textContent = ei.length+' eligible';
+    if (!ei.length && !ai.length) { show('empty-pim'); return; }
+    const all = [...ai.map(i=>({...i,_t:'active'})),...ei.map(i=>({...i,_t:'eligible'}))].slice(0,20);
+    const list = document.getElementById('list-pim');
+    list.innerHTML = all.map(item => {
+      const role = item.roleDefinition?.displayName||item.roleDefinitionId||'—';
+      const prin = item.principal?.displayName||item.principalId||'—';
+      const upn  = item.principal?.userPrincipalName||'';
+      const end  = item.scheduleInfo?.expiration?.endDateTime ? new Date(item.scheduleInfo.expiration.endDateTime).toLocaleDateString() : 'Permanent';
+      return '<div class="pim-row"><div><div class="pim-role">'+esc(role)+'</div><div class="pim-meta">'+esc(prin)+(upn?' · '+esc(upn):'')+' </div></div><div class="pim-right"><span class="pim-meta">'+end+'</span><span class="pill '+(item._t==='active'?'pill-green':'pill-blue')+'">'+item._t+'</span></div></div>';
+    }).join('');
+    list.style.display='block';
+  } catch(e) { permErr('pim','badge-pim','stat-pim','stat-pim-sub','RoleManagement.Read.Directory',e.message); }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && document.getElementById('login-screen').style.display!=='none') signIn();
+});
+</script>
+</body>
+</html>
