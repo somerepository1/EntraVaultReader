@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EntraVault — Security Dashboard</title>
+<style>
+:root{
+  --bg:#f3f2f1;--surface:#fff;--surface2:#faf9f8;--border:#edebe9;--border2:#d2d0ce;
+  --text:#201f1e;--text2:#605e5c;--text3:#a19f9d;
+  --blue:#0078d4;--blue-lt:#eff6fc;--blue-mid:#c7e0f4;
+  --purple:#8764b8;--purple-lt:#f4f0fb;
+  --green:#107c10;--green-lt:#dff6dd;
+  --red:#a4262c;--red-lt:#fde7e9;
+  --amber-lt:#fff4ce;--amber-text:#7a3d00;
+  --teal:#038387;--teal-lt:#e6f4f4;
+  --orange:#ca5010;--orange-lt:#fdf0e8;
+  --shadow:rgba(0,0,0,0.07);--shadow2:rgba(0,0,0,0.13);
+  --r:4px;--rl:8px;--font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+
+/* TOPBAR */
+.topbar{height:48px;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:200;box-shadow:0 1px 3px var(--shadow)}
+.tb-brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--text);text-decoration:none}
+.tb-brand svg{width:20px;height:20px}
+.tb-sep{width:1px;height:20px;background:var(--border2);margin:0 4px}
+.tb-title{font-size:13px;color:var(--text2)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.persona{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+.p-av{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* LOGIN */
+#login-screen{min-height:calc(100vh - 48px);display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.login-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 2px 8px var(--shadow),0 8px 32px var(--shadow);padding:40px;width:100%;max-width:440px}
+.login-hdr{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.login-ico{width:40px;height:40px;border-radius:var(--rl);background:var(--blue-lt);display:flex;align-items:center;justify-content:center}
+.login-ico svg{width:24px;height:24px}
+.login-hdr h1{font-size:20px;font-weight:600}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.6}
+.fl-field{margin-bottom:16px}
+.fl-field label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.fl-field input{width:100%;height:32px;border:1px solid var(--border2);border-radius:var(--r);padding:0 8px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .1s,box-shadow .1s}
+.fl-field input:hover{border-color:var(--text3)}
+.fl-field input:focus{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.fl-field input::placeholder{color:var(--text3)}
+.fl-field .hint{font-size:11px;color:var(--text3);margin-top:3px}
+.fl-btn{width:100%;height:32px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .1s;margin-top:8px}
+.fl-btn:hover{background:#106ebe}
+.fl-btn:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed}
+.ms-sq{display:flex;flex-wrap:wrap;width:16px;height:16px;gap:1px;flex-shrink:0}
+.ms-sq span{width:7px;height:7px}
+.msgbar{display:flex;gap:8px;align-items:flex-start;border-radius:var(--r);padding:10px 12px;font-size:13px;margin-top:16px;line-height:1.5}
+.msgbar.info{background:var(--blue-lt);color:#004578;border-left:3px solid var(--blue)}
+.msgbar.error{background:var(--red-lt);color:var(--red);border-left:3px solid var(--red);display:none}
+.msgbar svg{flex-shrink:0;margin-top:1px;width:16px;height:16px}
+
+/* DASHBOARD */
+#dashboard{display:none}
+
+/* COMMAND BAR */
+.cmdbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:4px;height:44px}
+.cmd{display:flex;align-items:center;gap:6px;padding:0 10px;height:32px;border-radius:var(--r);border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text);cursor:pointer;transition:background .1s;white-space:nowrap}
+.cmd:hover{background:var(--bg)}
+.cmd svg{width:16px;height:16px;flex-shrink:0}
+.cmd.danger:hover{background:var(--red-lt);color:var(--red)}
+.cmd-sep{width:1px;height:24px;background:var(--border2);margin:0 4px}
+.rtime{margin-left:auto;font-size:12px;color:var(--text3)}
+
+/* TABS */
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;overflow-x:auto;position:sticky;top:48px;z-index:100}
+.tab{display:flex;align-items:center;gap:6px;padding:0 16px;height:44px;border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .1s,border-color .1s;flex-shrink:0}
+.tab:hover{color:var(--text);background:var(--bg)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tab svg{width:15px;height:15px;flex-shrink:0}
+.tab-count{background:var(--bg);border:1px solid var(--border2);border-radius:10px;font-size:10px;font-weight:600;padding:1px 6px;color:var(--text2);min-width:20px;text-align:center}
+.tab.active .tab-count{background:var(--blue-lt);border-color:var(--blue-mid);color:var(--blue)}
+
+/* TAB CONTENT */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* OVERVIEW TAB */
+.overview{padding:20px;max-width:1600px;margin:0 auto}
+
+/* SCORE CARD */
+.score-section{display:grid;grid-template-columns:280px 1fr;gap:16px;margin-bottom:20px}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 1px 2px var(--shadow);padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.score-ring{position:relative;width:120px;height:120px}
+.score-ring svg{width:120px;height:120px;transform:rotate(-90deg)}
+.score-ring-track{fill:none;stroke:var(--border2);stroke-width:10}
+.score-ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-size:28px;font-weight:700;line-height:1;letter-spacing:-1px}
+.score-denom{font-size:12px;color:var(--text3)}
+.score-label{font-size:13px;font-weight:600;color:var(--text2)}
+.score-sub{font-size:11px;color:var(--text3)}
+
+.recs-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 1px 2px var(--shadow);overflow:hidden}
+.recs-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.recs-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.recs-title svg{width:15px;height:15px;color:var(--blue)}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px var(--shadow);transition:box-shadow .15s}
+.kpi:hover{box-shadow:0 2px 8px var(--shadow2)}
+.kpi-ic{width:36px;height:36px;border-radius:var(--rl);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-ic svg{width:18px;height:18px}
+.kpi-ic.blue  {background:var(--blue-lt);  color:var(--blue)}
+.kpi-ic.purple{background:var(--purple-lt);color:var(--purple)}
+.kpi-ic.green {background:var(--green-lt); color:var(--green)}
+.kpi-ic.red   {background:var(--red-lt);   color:var(--red)}
+.kpi-ic.teal  {background:var(--teal-lt);  color:var(--teal)}
+.kpi-ic.orange{background:var(--orange-lt);color:var(--orange)}
+.kpi-val{font-size:24px;font-weight:700;line-height:1;letter-spacing:-.5px}
+.kpi-lbl{font-size:11px;color:var(--text2);margin-top:2px}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 1px 2px var(--shadow);overflow:hidden}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.card-title svg{width:15px;height:15px;color:var(--blue);flex-shrink:0}
+.card-body{padding:0}
+
+/* SECTION TAB LAYOUT */
+.sec-page{padding:20px;max-width:1600px;margin:0 auto}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.full-col{grid-column:1/-1}
+
+/* BADGE */
+.bdg{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.bdg.blue  {background:var(--blue-lt);  color:var(--blue)}
+.bdg.green {background:var(--green-lt); color:var(--green)}
+.bdg.red   {background:var(--red-lt);   color:var(--red)}
+.bdg.amber {background:var(--amber-lt); color:var(--amber-text)}
+.bdg.purple{background:var(--purple-lt);color:var(--purple)}
+.bdg.teal  {background:var(--teal-lt);  color:var(--teal)}
+.bdg.orange{background:var(--orange-lt);color:var(--orange)}
+.bdg.neutral{background:var(--bg);color:var(--text2)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:11px;font-weight:600;color:var(--text2);padding:8px 18px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+.tbl td{padding:9px 18px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg)}
+.tbl td.mono{font-family:monospace;font-size:11px;color:var(--text2)}
+.cell-name{font-weight:600;color:var(--text)}
+.cell-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* EXPANDABLE CA */
+.ca-row{cursor:pointer}
+.ca-row:hover td{background:var(--blue-lt)}
+.ca-row.open td{background:var(--blue-lt)}
+.ca-det{display:none;background:var(--surface2)}
+.ca-det td{padding:0!important}
+.ca-det-inner{padding:14px 18px 16px 36px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ca-group{display:flex;flex-direction:column;gap:4px}
+.ca-group-lbl{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.ca-chips{display:flex;flex-wrap:wrap;gap:3px}
+.ca-chip{display:inline-flex;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:1px 6px;font-size:11px;color:var(--text)}
+.exp{display:inline-block;transition:transform .2s;margin-right:6px;font-size:10px;color:var(--text3)}
+.ca-row.open .exp{transform:rotate(90deg)}
+
+/* METHOD GRID */
+.mth-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--border)}
+.mth-cell{background:var(--surface);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.mth-cell:hover{background:var(--bg)}
+.mth-name{font-weight:500}
+.mth-st{display:flex;align-items:center;gap:5px;font-size:11px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot.on{background:var(--green)}
+.dot.off{background:var(--border2)}
+
+/* SECURE SCORE RECS */
+.rec-item{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer;transition:background .1s}
+.rec-item:last-child{border-bottom:none}
+.rec-item:hover{background:var(--bg)}
+.rec-bar-wrap{width:60px;height:6px;background:var(--border2);border-radius:3px;flex-shrink:0}
+.rec-bar{height:6px;border-radius:3px;transition:width .5s}
+.rec-pts{font-size:11px;color:var(--text3);white-space:nowrap;width:60px;text-align:right;flex-shrink:0}
+.rec-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-cat{flex-shrink:0}
+
+/* STATES */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--text3);font-size:13px}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{display:flex;flex-direction:column;align-items:center;padding:40px;gap:8px;color:var(--text3);font-size:13px;text-align:center}
+.perm-bar{margin:14px 18px;background:var(--amber-lt);border-left:3px solid #d4a010;border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--amber-text);line-height:1.6}
+
+/* SEARCH */
+.search-wrap{padding:10px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.search-inp{width:100%;max-width:320px;height:28px;border:1px solid var(--border2);border-radius:var(--r);padding:0 8px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--surface);outline:none}
+.search-inp:focus{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+
+@media(max-width:1100px){.two-col{grid-template-columns:1fr}.score-section{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(3,1fr)}.ov-grid3{grid-template-columns:1fr!important}}
+@media(max-width:900px){.ov-grid3{grid-template-columns:1fr!important}}
+@media(max-width:600px){.kpi-row{grid-template-columns:1fr 1fr}.ca-det-inner{grid-template-columns:1fr 1fr}}
+
+/* Compliance framework toggle buttons */
+.cfw-btn{border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:500;color:var(--text2);padding:4px 10px;border-radius:3px;cursor:pointer;transition:background .1s,color .1s;white-space:nowrap}
+.cfw-btn:hover{background:var(--bg);color:var(--text)}
+.cfw-btn.active{background:var(--blue);color:#fff}
+
+/* Compliance result rows */
+.comp-row td{vertical-align:top;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px}
+.comp-row:last-child td{border-bottom:none}
+.comp-row:hover td{background:var(--bg)}
+.comp-row.expandable{cursor:pointer}
+.comp-detail{display:none;background:var(--surface2)}
+.comp-detail td{padding:0!important}
+.comp-detail-inner{padding:14px 18px 16px 52px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.comp-det-sec{display:flex;flex-direction:column;gap:4px}
+.comp-det-lbl{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.comp-det-val{font-size:12px;color:var(--text);line-height:1.5}
+.comp-det-val a{color:var(--blue);text-decoration:none}
+.comp-det-val a:hover{text-decoration:underline}
+
+/* Severity badges */
+.sev{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.sev-critical{background:#a4262c;color:#fff}
+.sev-high    {background:var(--orange-lt);color:var(--orange)}
+.sev-medium  {background:var(--amber-lt); color:var(--amber-text)}
+.sev-low     {background:var(--bg);       color:var(--text3);border:1px solid var(--border2)}
+
+/* Status badges */
+.stat-pass{display:inline-flex;align-items:center;gap:4px;background:var(--green-lt);color:var(--green);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600}
+.stat-fail{display:inline-flex;align-items:center;gap:4px;background:var(--red-lt);  color:var(--red);  border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600}
+.stat-warn{display:inline-flex;align-items:center;gap:4px;background:var(--amber-lt);color:var(--amber-text);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600}
+.stat-info{display:inline-flex;align-items:center;gap:4px;background:var(--blue-lt); color:var(--blue); border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600}
+.stat-na  {display:inline-flex;align-items:center;gap:4px;background:var(--bg);color:var(--text3);border-radius:10px;padding:2px 8px;font-size:11px;border:1px solid var(--border2)}
+
+/* Framework tag pill */
+.fw-tag{display:inline-block;background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;font-size:10px;font-weight:600;color:var(--text2);white-space:nowrap}
+
+/* Print styles */
+@media print{
+  .topbar,.cmdbar,.tab-bar,.ov-greeting,#login-screen{display:none!important}
+  .tab-content{display:block!important}
+  #tab-compliance{display:block!important}
+  .card{box-shadow:none;border:1px solid #ccc}
+  .comp-detail{display:table-row!important}
+  button{display:none!important}
+  @page{margin:1.5cm}
+}
+@media(max-width:800px){.comp-detail-inner{grid-template-columns:1fr}#comp-summary{grid-template-columns:repeat(2,1fr)!important}}
+
+/* Event feed items */
+.ev-item{display:flex;align-items:flex-start;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;transition:background .1s}
+.ev-item:last-child{border-bottom:none}
+.ev-item:hover{background:var(--bg)}
+.ev-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ev-icon svg{width:13px;height:13px}
+.ev-icon.consent  {background:var(--red-lt);    color:var(--red)}
+.ev-icon.app      {background:var(--orange-lt);  color:var(--orange)}
+.ev-icon.role     {background:var(--purple-lt);  color:var(--purple)}
+.ev-icon.guest    {background:var(--amber-lt);   color:var(--amber-text)}
+.ev-icon.policy   {background:var(--blue-lt);    color:var(--blue)}
+.ev-icon.other    {background:var(--bg);         color:var(--text3)}
+.ev-body{flex:1;min-width:0}
+.ev-title{font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-detail{font-size:11px;color:var(--text3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-right{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.ev-time{font-size:10px;color:var(--text3);white-space:nowrap}
+
+/* Best practice check rows */
+.bp-item{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px}
+.bp-item:last-child{border-bottom:none}
+.bp-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bp-icon svg{width:11px;height:11px}
+.bp-icon.pass{background:var(--green-lt);color:var(--green)}
+.bp-icon.fail{background:var(--red-lt);  color:var(--red)}
+.bp-icon.warn{background:var(--amber-lt);color:var(--amber-text)}
+.bp-icon.info{background:var(--blue-lt); color:var(--blue)}
+.bp-icon.load{background:var(--bg);      color:var(--text3)}
+.bp-text{flex:1;min-width:0}
+.bp-name{font-weight:600;color:var(--text)}
+.bp-desc{font-size:11px;color:var(--text3);margin-top:1px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="tb-brand" href="#">
+    <svg viewBox="0 0 20 20" fill="none"><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" fill="#0078d4" opacity=".15"/><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" stroke="#0078d4" stroke-width="1.2"/><circle cx="10" cy="10" r="3" fill="#0078d4"/></svg>
+    EntraVault
+  </a>
+  <div class="tb-sep"></div>
+  <span class="tb-title">Security Dashboard</span>
+  <div class="tb-right" id="tb-right" style="display:none">
+    <div class="persona">
+      <div class="p-av" id="p-av">?</div>
+      <span id="p-name" style="font-size:13px"></span>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-panel" style="max-width:520px">
+
+    <!-- Logo + brand -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+      <div style="width:52px;height:52px;border-radius:12px;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="28" height="28" viewBox="0 0 20 20" fill="none"><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" fill="#0078d4" opacity=".15"/><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" stroke="#0078d4" stroke-width="1.4"/><circle cx="10" cy="10" r="3" fill="#0078d4"/></svg>
+      </div>
+      <div>
+        <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;color:var(--text)">EntraVault</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:1px">Microsoft Entra ID Security Dashboard</div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px">
+      EntraVault gives you a live, read-only view of your Microsoft Entra ID tenant's security posture — all in one place, with no installation required.
+    </p>
+
+    <!-- Feature pills -->
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-lt);color:var(--blue);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/></svg>
+        Conditional Access
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--purple-lt);color:var(--purple);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M14 6a4 4 0 01-4.899 3.899l-1.955 1.955a.5.5 0 01-.353.146H5v1.5a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-2.293a.5.5 0 01.146-.353l3.955-3.955A4 4 0 1114 6z" clip-rule="evenodd"/></svg>
+        MFA &amp; Auth Methods
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--green-lt);color:var(--green);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/></svg>
+        Best Practice Checks
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--orange-lt);color:var(--orange);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+        Secure Score
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--teal-lt);color:var(--teal);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+        Users, Devices &amp; Guests
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg);color:var(--text2);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/></svg>
+        Admin Roles
+      </span>
+    </div>
+
+    <!-- Divider -->
+    <div style="border-top:1px solid var(--border);margin-bottom:24px"></div>
+
+    <!-- Sign-in button -->
+    <button class="fl-btn" id="btn-si" onclick="signIn()" style="height:40px;font-size:15px">
+      <div class="ms-sq"><span style="background:#f25022"></span><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span></div>
+      Sign in with Microsoft
+    </button>
+
+    <!-- Trust note -->
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:12px;color:var(--text3);line-height:1.5">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0;margin-top:1px"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z" clip-rule="evenodd"/></svg>
+      <span>Read-only access. Signs in via Microsoft's secure OAuth2 PKCE flow. No passwords or secrets are stored. Your data never leaves your browser.</span>
+    </div>
+
+    <div class="msgbar error" id="lerr" style="margin-top:14px">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 5h2v5H7V5zm0 6h2v2H7v-2z"/></svg>
+      <span id="lerr-t"></span>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <!-- COMMAND BAR -->
+  <div class="cmdbar">
+    <button class="cmd" onclick="loadAll()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 8A5.5 5.5 0 112.635 5.4L1.28 4.047A7 7 0 1014.98 9H13.5V8z"/></svg>Refresh</button>
+    <div class="cmd-sep"></div>
+    <button class="cmd danger" onclick="signOut()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.5 1A.5.5 0 018 1.5v6a.5.5 0 01-1 0v-6A.5.5 0 017.5 1zm3.15 2.265a.5.5 0 01.707.708A4.5 4.5 0 115.5 8a4.5 4.5 0 01-4.5 4.5.5.5 0 010-1A3.5 3.5 0 1011.5 8a3.5 3.5 0 00-.643-2.027.5.5 0 01.793-.708z"/></svg>Sign out</button>
+    <span class="rtime" id="rtime"></span>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('overview',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM2 8a6 6 0 1112 0A6 6 0 012 8z"/><path d="M8 4a.75.75 0 01.75.75v3.5l2 1a.75.75 0 11-.75 1.3l-2.25-1.125A.75.75 0 017.25 8.75v-4A.75.75 0 018 4z"/></svg>Overview</button>
+    <button class="tab" onclick="switchTab('ca',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/></svg>Conditional Access<span class="tab-count" id="tc-ca">…</span></button>
+    <button class="tab" onclick="switchTab('mfa',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M14 6a4 4 0 01-4.899 3.899l-1.955 1.955a.5.5 0 01-.353.146H5v1.5a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-2.293a.5.5 0 01.146-.353l3.955-3.955A4 4 0 1114 6zm-4-2a.75.75 0 000 1.5.5.5 0 01.5.5.75.75 0 001.5 0 2 2 0 00-2-2z" clip-rule="evenodd"/></svg>Auth Methods<span class="tab-count" id="tc-mfa">…</span></button>
+    <button class="tab" onclick="switchTab('users',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm2-3a2 2 0 11-4 0 2 2 0 014 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>Users<span class="tab-count" id="tc-users">…</span></button>
+    <button class="tab" onclick="switchTab('devices',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M.5 3.5A.5.5 0 011 3h13a.5.5 0 010 1H14v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4H1a.5.5 0 01-.5-.5zM3 4v6h10V4H3z"/><path d="M5 14a.5.5 0 010-1h6a.5.5 0 010 1H5zm-1.5-2a.5.5 0 010-1h9a.5.5 0 010 1h-9z"/></svg>Devices<span class="tab-count" id="tc-devices">…</span></button>
+    <button class="tab" onclick="switchTab('apps',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.5A1.5 1.5 0 011.5 0h13A1.5 1.5 0 0116 1.5v13a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 010 14.5v-13zM1.5 1a.5.5 0 00-.5.5V5h14V1.5a.5.5 0 00-.5-.5h-13zM1 6v8.5a.5.5 0 00.5.5H6V6H1zm7 0v9h6.5a.5.5 0 00.5-.5V6H8zm-1 9V6H6v9h1z"/></svg>Applications<span class="tab-count" id="tc-apps">…</span></button>
+    <button class="tab" onclick="switchTab('groups',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 100-6 3 3 0 000 6zm-5.784 6A2.238 2.238 0 015 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 005 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>Groups<span class="tab-count" id="tc-groups">…</span></button>
+    <button class="tab" onclick="switchTab('admins',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z" clip-rule="evenodd"/></svg>Admin Roles<span class="tab-count" id="tc-admins">…</span></button>
+    <button class="tab" onclick="switchTab('guests',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 11-6 0 3 3 0 016 0zM8 7a2 2 0 100-4 2 2 0 000 4zm-5.5 8a.5.5 0 01-.5-.5A4 4 0 018 10.5a4 4 0 016 3.5.5.5 0 01-.5.5h-11zm10-4a1 1 0 100-2 1 1 0 000 2zm2 3.5a.5.5 0 00-.5-.5 2.5 2.5 0 00-2.5 2.5h2.5a.5.5 0 00.5-.5v-1.5z"/></svg>Guests<span class="tab-count" id="tc-guests">…</span></button>
+    <button class="tab" onclick="switchTab('score',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 012-2h8a2 2 0 012 2v13.5a.5.5 0 01-.777.416L8 13.101l-5.223 2.815A.5.5 0 012 15.5V2zm2-1a1 1 0 00-1 1v12.566l4.723-2.482a.5.5 0 01.554 0L13 14.566V2a1 1 0 00-1-1H4z"/><path d="M8 4a.5.5 0 01.5.5v1h1a.5.5 0 010 1h-1v1a.5.5 0 01-1 0v-1h-1a.5.5 0 010-1h1v-1A.5.5 0 018 4z"/></svg>Secure Score<span class="tab-count" id="tc-score">…</span></button>
+    <button class="tab" onclick="switchTab('compliance',this)" style="border-left:1px solid var(--border2)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 1a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1h12zM2 0a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2H2z"/><path d="M10.97 4.97a.75.75 0 010 1.07l-3.992 4a.75.75 0 01-1.06.02L3.927 8.1a.75.75 0 111.06-1.06l1.47 1.47 3.456-3.466a.75.75 0 011.057-.075z"/></svg>Compliance<span class="tab-count" id="tc-compliance">…</span></button>
+  </div>
+
+  <!-- ── OVERVIEW TAB ── -->
+  <div id="tab-overview" class="tab-content active">
+    <div class="overview">
+
+      <!-- GREETING BANNER -->
+      <div id="ov-greeting" style="display:none;margin-bottom:20px">
+        <div style="background:linear-gradient(135deg,#0078d4 0%,#106ebe 60%,#0064b4 100%);border-radius:var(--rl);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 2px 8px rgba(0,120,212,0.25)">
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.3px" id="ov-hello">Hello!</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.8);margin-top:3px" id="ov-sub">Loading your tenant security summary…</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <!-- Secure Score pill -->
+            <div style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:var(--rl);padding:12px 20px;text-align:center;min-width:120px">
+              <div style="font-size:11px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Secure Score</div>
+              <div style="font-size:28px;font-weight:700;color:#fff;line-height:1;letter-spacing:-1px" id="ov-score-pct">—</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:3px" id="ov-score-pts">loading…</div>
+              <!-- Progress bar -->
+              <div style="background:rgba(255,255,255,0.2);border-radius:3px;height:4px;margin-top:8px;overflow:hidden">
+                <div id="ov-score-bar" style="height:4px;border-radius:3px;background:#fff;width:0%;transition:width .8s ease"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-ic blue"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-ca">—</div><div class="kpi-lbl">CA Policies</div><div class="kpi-sub" id="ks-ca">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic purple"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-mfa">—</div><div class="kpi-lbl">Auth Methods On</div><div class="kpi-sub" id="ks-mfa">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic teal"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-users">—</div><div class="kpi-lbl">Total Users</div><div class="kpi-sub" id="ks-users">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic green"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg></div><div><div class="kpi-val" id="kv-admins">—</div><div class="kpi-lbl">Admin Members</div><div class="kpi-sub" id="ks-admins">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic orange"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-score">—</div><div class="kpi-lbl">Secure Score</div><div class="kpi-sub" id="ks-score">loading…</div></div></div>
+      </div>
+
+      <!-- THREE COLUMN GRID -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px" class="ov-grid3">
+
+        <!-- Security Events Feed -->
+        <div class="card" style="grid-column:1/3">
+          <div class="card-hdr">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="currentColor" style="color:var(--red)"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z" clip-rule="evenodd"/></svg>
+              High-Severity Security Events
+              <span style="font-size:11px;font-weight:400;color:var(--text3)">— app consents, new apps, role changes, guest invites</span>
+            </div>
+            <span class="bdg red" id="bdg-events">…</span>
+          </div>
+          <div class="card-body">
+            <div class="loading" id="ld-events"><div class="spinner"></div>Loading security events…</div>
+            <div id="list-events" style="display:none"></div>
+            <div class="empty" id="emp-events" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px;color:var(--border2)"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              No high-severity events found — or AuditLog.Read.All permission not granted
+            </div>
+            <div id="err-events" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Best Practice Checks -->
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="currentColor" style="color:var(--green)"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/></svg>
+              Best Practice Checks
+            </div>
+            <span class="bdg green" id="bdg-bp">checking…</span>
+          </div>
+          <div class="card-body">
+            <div class="loading" id="ld-bp"><div class="spinner"></div>Running checks…</div>
+            <div id="list-bp" style="display:none"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM ROW -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/></svg>Admin Role Members</div><span class="bdg green" id="bdg-admins-ov">…</span></div>
+          <div class="card-body"><div class="loading" id="ld-admins-ov"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-admins-ov" style="display:none"><thead><tr><th>User</th><th>Role</th><th>Type</th></tr></thead><tbody id="body-admins-ov"></tbody></table><div id="err-admins-ov" style="display:none"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 11-6 0 3 3 0 016 0zM8 7a2 2 0 100-4 2 2 0 000 4zm-5.5 8a.5.5 0 01-.5-.5A4 4 0 018 10.5a4 4 0 016 3.5.5.5 0 01-.5.5h-11zm10-4a1 1 0 100-2 1 1 0 000 2zm2 3.5a.5.5 0 00-.5-.5 2.5 2.5 0 00-2.5 2.5h2.5a.5.5 0 00.5-.5v-1.5z"/></svg>Guest Users</div><span class="bdg red" id="bdg-guests-ov">…</span></div>
+          <div class="card-body"><div class="loading" id="ld-guests-ov"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-guests-ov" style="display:none"><thead><tr><th>Name</th><th>Email</th><th>State</th></tr></thead><tbody id="body-guests-ov"></tbody></table><div id="err-guests-ov" style="display:none"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── CA TAB ── -->
+  <div id="tab-ca" class="tab-content">
+    <div class="sec-page">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/></svg>Conditional Access Policies <span style="font-size:11px;font-weight:400;color:var(--text3)">— click row to expand</span></div><span class="bdg blue" id="bdg-ca">…</span></div>
+        <div class="card-body"><div class="loading" id="ld-ca"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-ca" style="display:none"><thead><tr><th></th><th>Policy Name</th><th>State</th><th>Users</th><th>Apps</th><th>Platforms</th><th>Grant Controls</th></tr></thead><tbody id="body-ca"></tbody></table><div class="empty" id="emp-ca" style="display:none">No policies found</div><div id="err-ca" style="display:none"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MFA TAB ── -->
+  <div id="tab-mfa" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M14 6a4 4 0 01-4.899 3.899l-1.955 1.955a.5.5 0 01-.353.146H5v1.5a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-2.293a.5.5 0 01.146-.353l3.955-3.955A4 4 0 1114 6zm-4-2a.75.75 0 000 1.5.5.5 0 01.5.5.75.75 0 001.5 0 2 2 0 00-2-2z" clip-rule="evenodd"/></svg>Authentication Methods Policy</div><span class="bdg purple" id="bdg-mfa">…</span></div><div class="card-body"><div class="loading" id="ld-mfa"><div class="spinner"></div>Loading…</div><div class="mth-grid" id="grid-mfa" style="display:none"></div><div class="empty" id="emp-mfa" style="display:none">No data</div><div id="err-mfa" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── USERS TAB ── -->
+  <div id="tab-users" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm2-3a2 2 0 11-4 0 2 2 0 014 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>All Users</div><span class="bdg teal" id="bdg-users">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-users" placeholder="Search by name or UPN…" oninput="filterTable('body-users',this.value)"/></div><div class="card-body"><div class="loading" id="ld-users"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-users" style="display:none"><thead><tr><th>Name</th><th>UPN</th><th>Type</th><th>Account</th><th>Created</th></tr></thead><tbody id="body-users"></tbody></table><div class="empty" id="emp-users" style="display:none">No users found</div><div id="err-users" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── DEVICES TAB ── -->
+  <div id="tab-devices" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M.5 3.5A.5.5 0 011 3h13a.5.5 0 010 1H14v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4H1a.5.5 0 01-.5-.5z"/><path d="M5 14a.5.5 0 010-1h6a.5.5 0 010 1H5z"/></svg>Registered Devices</div><span class="bdg blue" id="bdg-devices">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-devices" placeholder="Search by device name or OS…" oninput="filterTable('body-devices',this.value)"/></div><div class="card-body"><div class="loading" id="ld-devices"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-devices" style="display:none"><thead><tr><th>Device Name</th><th>OS</th><th>Join Type</th><th>Compliant</th><th>Last Seen</th></tr></thead><tbody id="body-devices"></tbody></table><div class="empty" id="emp-devices" style="display:none">No devices found</div><div id="err-devices" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── APPS TAB ── -->
+  <div id="tab-apps" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.5A1.5 1.5 0 011.5 0h13A1.5 1.5 0 0116 1.5v13a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 010 14.5v-13z"/></svg>Enterprise Applications</div><span class="bdg orange" id="bdg-apps">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-apps" placeholder="Search by app name…" oninput="filterTable('body-apps',this.value)"/></div><div class="card-body"><div class="loading" id="ld-apps"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-apps" style="display:none"><thead><tr><th>Application</th><th>App ID</th><th>Publisher</th><th>Enabled</th></tr></thead><tbody id="body-apps"></tbody></table><div class="empty" id="emp-apps" style="display:none">No applications found</div><div id="err-apps" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── GROUPS TAB ── -->
+  <div id="tab-groups" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7z"/></svg>Groups</div><span class="bdg purple" id="bdg-groups">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-groups" placeholder="Search by group name…" oninput="filterTable('body-groups',this.value)"/></div><div class="card-body"><div class="loading" id="ld-groups"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-groups" style="display:none"><thead><tr><th>Group Name</th><th>Type</th><th>Members</th><th>Mail</th><th>Created</th></tr></thead><tbody id="body-groups"></tbody></table><div class="empty" id="emp-groups" style="display:none">No groups found</div><div id="err-groups" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── ADMINS TAB ── -->
+  <div id="tab-admins" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/></svg>Admin Role Members</div><span class="bdg green" id="bdg-admins">…</span></div><div class="card-body"><div class="loading" id="ld-admins"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-admins" style="display:none"><thead><tr><th>User</th><th>Role</th><th>Type</th></tr></thead><tbody id="body-admins"></tbody></table><div class="empty" id="emp-admins" style="display:none">No admin roles found</div><div id="err-admins" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── GUESTS TAB ── -->
+  <div id="tab-guests" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Guest Users (B2B)</div><span class="bdg red" id="bdg-guests">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-guests" placeholder="Search by name or email…" oninput="filterTable('body-guests',this.value)"/></div><div class="card-body"><div class="loading" id="ld-guests"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-guests" style="display:none"><thead><tr><th>Name</th><th>Email / UPN</th><th>Invited</th><th>State</th></tr></thead><tbody id="body-guests"></tbody></table><div class="empty" id="emp-guests" style="display:none">No guest users found</div><div id="err-guests" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── SECURE SCORE TAB ── -->
+  <div id="tab-score" class="tab-content">
+    <div class="sec-page">
+      <div class="score-section">
+        <div class="score-card" id="score-card">
+          <div class="loading" id="ld-score-ring"><div class="spinner"></div>Loading…</div>
+          <div id="score-ring-wrap" style="display:none">
+            <div class="score-ring">
+              <svg viewBox="0 0 120 120"><circle class="score-ring-track" cx="60" cy="60" r="50"/><circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="50" stroke="#0078d4" stroke-dasharray="314" stroke-dashoffset="314"/></svg>
+              <div class="score-center"><div class="score-num" id="score-cur">—</div><div class="score-denom" id="score-max">/ —</div></div>
+            </div>
+            <div style="text-align:center;margin-top:8px"><div class="score-label">Secure Score</div><div class="score-sub" id="score-pct">—</div></div>
+          </div>
+        </div>
+        <div class="recs-card">
+          <div class="recs-hdr"><div class="recs-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 012-2h8a2 2 0 012 2v13.5a.5.5 0 01-.777.416L8 13.101l-5.223 2.815A.5.5 0 012 15.5V2z"/></svg>Improvement Actions</div><span class="bdg orange" id="bdg-score">…</span></div>
+          <div id="ld-score-recs" class="loading"><div class="spinner"></div>Loading…</div>
+          <div id="list-score" style="display:none"></div>
+          <div class="empty" id="emp-score" style="display:none">No recommendations found</div>
+          <div id="err-score" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COMPLIANCE TAB ── -->
+  <div id="tab-compliance" class="tab-content">
+    <div class="sec-page">
+
+      <!-- Compliance toolbar -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:3px">
+          <button class="cfw-btn active" onclick="setFramework('all',this)">All</button>
+          <button class="cfw-btn" onclick="setFramework('CIS',this)">CIS M365</button>
+          <button class="cfw-btn" onclick="setFramework('NIST',this)">NIST 800-53</button>
+          <button class="cfw-btn" onclick="setFramework('ISO',this)">ISO 27001</button>
+          <button class="cfw-btn" onclick="setFramework('MITRE',this)">MITRE ATT&amp;CK</button>
+        </div>
+        <div style="display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:3px">
+          <button class="cfw-btn active" onclick="setSeverity('all',this)" id="sev-all">All severity</button>
+          <button class="cfw-btn" onclick="setSeverity('critical',this)" style="color:var(--red)">Critical</button>
+          <button class="cfw-btn" onclick="setSeverity('high',this)" style="color:var(--orange)">High</button>
+          <button class="cfw-btn" onclick="setSeverity('medium',this)">Medium</button>
+          <button class="cfw-btn" onclick="setSeverity('low',this)" style="color:var(--text2)">Low</button>
+        </div>
+        <div style="display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:3px">
+          <button class="cfw-btn active" onclick="setStatus('all',this)">All results</button>
+          <button class="cfw-btn" onclick="setStatus('fail',this)">Fail only</button>
+          <button class="cfw-btn" onclick="setStatus('pass',this)">Pass only</button>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="cmd" onclick="exportCSV()" style="background:var(--surface);border:1px solid var(--border);height:32px">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M.5 9.9a.5.5 0 01.5.5v2.5a1 1 0 001 1h12a1 1 0 001-1v-2.5a.5.5 0 011 0v2.5a2 2 0 01-2 2H2a2 2 0 01-2-2v-2.5a.5.5 0 01.5-.5z"/><path d="M7.646 11.854a.5.5 0 00.708 0l3-3a.5.5 0 00-.708-.708L8.5 10.293V1.5a.5.5 0 00-1 0v8.793L5.354 8.146a.5.5 0 10-.708.708l3 3z"/></svg>
+            Export CSV
+          </button>
+          <button class="cmd" onclick="exportHTMLReport()" style="background:var(--surface);border:1px solid var(--border);height:32px">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M14 4.5V14a2 2 0 01-2 2H4a2 2 0 01-2-2V2a2 2 0 012-2h5.5L14 4.5zm-3 0A1.5 1.5 0 019.5 3V1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V4.5h-2z"/></svg>
+            Export HTML Report
+          </button>
+          <button class="cmd" onclick="window.print()" style="background:var(--surface);border:1px solid var(--border);height:32px">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M2.5 8a.5.5 0 100-1 .5.5 0 000 1z"/><path d="M5 1a2 2 0 00-2 2v2H2a2 2 0 00-2 2v3a2 2 0 002 2h1v1a2 2 0 002 2h6a2 2 0 002-2v-1h1a2 2 0 002-2V7a2 2 0 00-2-2h-1V3a2 2 0 00-2-2H5zM4 3a1 1 0 011-1h6a1 1 0 011 1v2H4V3zm1 5a2 2 0 00-2 2v1H2a1 1 0 01-1-1V7a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-1 1h-1v-1a2 2 0 00-2-2H5zm7 2v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3a1 1 0 011-1h6a1 1 0 011 1z"/></svg>
+            Print / PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Score summary cards -->
+      <div id="comp-summary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+        <div class="kpi" id="comp-kpi-all"><div class="kpi-ic blue"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="comp-pct-all">—</div><div class="kpi-lbl">Overall compliance</div><div class="kpi-sub" id="comp-sub-all">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic teal"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="comp-pct-cis">—</div><div class="kpi-lbl">CIS M365</div><div class="kpi-sub" id="comp-sub-cis">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic purple"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="comp-pct-nist">—</div><div class="kpi-lbl">NIST 800-53</div><div class="kpi-sub" id="comp-sub-nist">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic green"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="comp-pct-iso">—</div><div class="kpi-lbl">ISO 27001</div><div class="kpi-sub" id="comp-sub-iso">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic red"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="comp-fail-crit">—</div><div class="kpi-lbl">Critical failures</div><div class="kpi-sub" id="comp-sub-crit">loading…</div></div></div>
+      </div>
+
+      <!-- Main compliance results table -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 1a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1h12zM2 0a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2H2z"/><path d="M10.97 4.97a.75.75 0 010 1.07l-3.992 4a.75.75 0 01-1.06.02L3.927 8.1a.75.75 0 111.06-1.06l1.47 1.47 3.456-3.466a.75.75 0 011.057-.075z"/></svg>
+            Security Controls Assessment
+          </div>
+          <span class="bdg blue" id="bdg-compliance">…</span>
+        </div>
+        <div class="card-body">
+          <div class="loading" id="ld-compliance"><div class="spinner"></div>Running compliance checks…</div>
+          <table class="tbl" id="tbl-compliance" style="display:none">
+            <thead>
+              <tr>
+                <th style="width:90px">Status</th>
+                <th style="width:80px">Severity</th>
+                <th>Control</th>
+                <th style="width:90px">CIS</th>
+                <th style="width:90px">NIST</th>
+                <th style="width:90px">ISO 27001</th>
+                <th style="width:120px">MITRE ATT&amp;CK</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody id="body-compliance"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+// ── PKCE ──────────────────────────────────────────────────────────────
+function b64url(b){return btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'')}
+async function sha256(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))}
+function rnd(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return b64url(a).substring(0,n)}
+
+const CLIENT_ID='db4eb7fe-3d30-4137-98cb-24f34672b1ef';
+const SCOPE='https://graph.microsoft.com/Policy.Read.All https://graph.microsoft.com/Directory.Read.All https://graph.microsoft.com/User.Read.All https://graph.microsoft.com/SecurityEvents.Read.All openid profile offline_access';
+
+let TOKEN=null,tokenExp=0;
+
+async function signIn(){
+  const ci=CLIENT_ID;
+  const ti='common';
+  hideErr();
+  const btn=document.getElementById('btn-si');
+  btn.disabled=true;btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;border-top-color:#fff"></div> Connecting…';
+  try{
+    const ru=window.location.href.split('?')[0].split('#')[0];
+    const v=rnd(64),ch=b64url(await sha256(v)),st=rnd(16);
+    sessionStorage.setItem('pv',v);sessionStorage.setItem('ps',st);
+    sessionStorage.setItem('pc',ci);sessionStorage.setItem('pt',ti);sessionStorage.setItem('pr',ru);
+    const url='https://login.microsoftonline.com/common/oauth2/v2.0/authorize?'
+      +'client_id='+encodeURIComponent(ci)
+      +'&response_type=code&redirect_uri='+encodeURIComponent(ru)
+      +'&scope='+encodeURIComponent(SCOPE)
+      +'&state='+encodeURIComponent(st)
+      +'&code_challenge='+encodeURIComponent(ch)
+      +'&code_challenge_method=S256&response_mode=query&prompt=select_account';
+    const w=480,h=640,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2);
+    const pop=window.open(url,'msauth','width='+w+',height='+h+',left='+l+',top='+t+',toolbar=no,menubar=no');
+    if(!pop){window.location.href=url;return}
+    await new Promise((res,rej)=>{
+      const tmr=setInterval(()=>{
+        try{
+          const pu=pop.location.href;
+          if(pu.startsWith(ru)){
+            clearInterval(tmr);
+            const p=new URLSearchParams(pop.location.search);pop.close();
+            const code=p.get('code'),rs=p.get('state'),err=p.get('error');
+            if(err){rej(new Error(p.get('error_description')||err));return}
+            if(rs!==st){rej(new Error('State mismatch.'));return}
+            if(!code){rej(new Error('No code returned.'));return}
+            exchCode(code,ci,ti,ru,v).then(res).catch(rej);
+          }
+        }catch(e){}
+        if(pop.closed){clearInterval(tmr);rej(new Error('Sign-in window was closed.'))}
+      },300);
+    });
+  }catch(e){showErr(e.message||String(e))}
+  finally{
+    btn.disabled=false;
+    btn.innerHTML='<div class="ms-sq"><span style="background:#f25022"></span><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span></div> Sign in with Microsoft';
+  }
+}
+
+async function exchCode(code,ci,ti,ru,v){
+  const body='client_id='+encodeURIComponent(ci)+'&grant_type=authorization_code&code='+encodeURIComponent(code)+'&redirect_uri='+encodeURIComponent(ru)+'&code_verifier='+encodeURIComponent(v)+'&scope='+encodeURIComponent(SCOPE);
+  const r=await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error_description||d.error||'Token exchange failed');
+  TOKEN=d.access_token;tokenExp=Date.now()+(d.expires_in-60)*1000;
+  if(d.refresh_token){sessionStorage.setItem('prf',d.refresh_token);sessionStorage.setItem('pc2',ci);sessionStorage.setItem('pt2',ti)}
+  if(d.id_token){try{const pl=JSON.parse(atob(d.id_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));const nm=pl.name||pl.preferred_username||'User';document.getElementById('p-av').textContent=nm.split(' ').map(s=>s[0]).join('').substring(0,2).toUpperCase();document.getElementById('p-name').textContent=nm;setGreeting(nm)}catch(e){}}  document.getElementById('login-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('tb-right').style.display='flex';
+  loadAll();
+}
+
+async function getToken(){
+  if(TOKEN&&Date.now()<tokenExp)return TOKEN;
+  const rf=sessionStorage.getItem('prf'),ci=sessionStorage.getItem('pc2'),ti=sessionStorage.getItem('pt2');
+  if(rf&&ci&&ti){
+    const body='client_id='+encodeURIComponent(ci)+'&grant_type=refresh_token&refresh_token='+encodeURIComponent(rf)+'&scope='+encodeURIComponent(SCOPE);
+    const r=await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const d=await r.json();
+    if(r.ok){TOKEN=d.access_token;tokenExp=Date.now()+(d.expires_in-60)*1000;if(d.refresh_token)sessionStorage.setItem('prf',d.refresh_token);return TOKEN}
+  }
+  throw new Error('Session expired. Please sign in again.');
+}
+
+async function signOut(){
+  TOKEN=null;tokenExp=0;
+  ['pv','ps','pc','pt','pr','prf','pc2','pt2'].forEach(k=>sessionStorage.removeItem(k));
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('tb-right').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+function showErr(m){document.getElementById('lerr-t').textContent=m;document.getElementById('lerr').style.display='flex'}
+function hideErr(){document.getElementById('lerr').style.display='none'}
+
+// ── TABS ──────────────────────────────────────────────────────────────
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── GRAPH ─────────────────────────────────────────────────────────────
+async function gFetch(path,beta){
+  const token=await getToken();
+  const base=beta?'https://graph.microsoft.com/beta':'https://graph.microsoft.com/v1.0';
+  const r=await fetch(base+path,{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'HTTP '+r.status)}
+  return r.json();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmtDate(s){if(!s)return'—';try{return new Date(s).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}catch(e){return s}}
+function show(id){const e=document.getElementById(id);if(e)e.style.display=''}
+function hide(id){const e=document.getElementById(id);if(e)e.style.display='none'}
+
+function permErr(key,bdg,kv,ks,perm,msg){
+  hide('ld-'+key);
+  const el=document.getElementById('err-'+key);
+  if(!el)return;
+  el.innerHTML='<div class="perm-bar">⚠ Access denied — required: <strong>'+esc(perm)+'</strong>'+(msg?'<br><small>'+esc(msg)+'</small>':'')+'</div>';
+  el.style.display='block';
+  const b=document.getElementById(bdg);if(b){b.textContent='No access';b.className='bdg red'}
+  const v=document.getElementById(kv);if(v)v.textContent='!';
+  const s=document.getElementById(ks);if(s)s.textContent='Permission error';
+}
+
+function setCount(tc,n){const e=document.getElementById(tc);if(e)e.textContent=n}
+
+function filterTable(tbodyId,q){
+  const rows=document.getElementById(tbodyId)?.querySelectorAll('tr')||[];
+  const lq=q.toLowerCase();
+  rows.forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(lq)?'':'none'});
+}
+
+// ── LOAD ALL ──────────────────────────────────────────────────────────
+async function loadAll(){
+  document.getElementById('rtime').textContent='Refreshing…';
+  // Reset all loaders
+  const keys=['ca','mfa','users','devices','apps','groups','admins','admins-ov','guests','guests-ov','score','events','bp'];
+  keys.forEach(k=>{
+    show('ld-'+k);
+    ['tbl-'+k,'grid-'+k,'list-'+k,'emp-'+k,'err-'+k,'score-ring-wrap'].forEach(hide);
+    const b=document.getElementById('body-'+k);if(b)b.innerHTML='';
+  });
+  // Reset BP data
+  BP_DATA.caPolicies=[];BP_DATA.mfaMethods=[];BP_DATA.users=[];BP_DATA.adminRows=[];BP_DATA.guests=[];BP_DATA.scorePct=null;BP_DATA.apps=[];BP_DATA.guestsLoaded=false;BP_DATA.authorizationPolicy=null;
+  await Promise.allSettled([loadCA(),loadMFA(),loadUsers(),loadDevices(),loadApps(),loadGroups(),loadAdmins(),loadGuests(),loadScore(),loadSecurityEvents()]);
+  runBestPracticeChecks();
+  await runCompliance();
+  document.getElementById('rtime').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+// ── CONDITIONAL ACCESS ────────────────────────────────────────────────
+const APP_NAMES={'All':'All apps','None':'None','Office365':'Office 365','MicrosoftAdminPortals':'Admin Portals'};
+const PLAT_NAMES={'android':'Android','iOS':'iOS','windows':'Windows','macOS':'macOS','linux':'Linux','windowsPhone':'WinPhone','all':'All'};
+
+async function loadCA(){
+  try{
+    const data=await gFetch('/identity/conditionalAccess/policies');
+    const ps=data.value||[];
+    BP_DATA.caPolicies=ps;
+    const enabled=ps.filter(p=>p.state==='enabled').length;
+    document.getElementById('kv-ca').textContent=ps.length;
+    document.getElementById('ks-ca').textContent=enabled+' enabled';
+    document.getElementById('bdg-ca').textContent=ps.length+' policies';
+    setCount('tc-ca',ps.length);
+    if(!ps.length){show('emp-ca');return}
+    const sCls={'enabled':'bdg green','disabled':'bdg neutral','enabledForReportingButNotEnforced':'bdg amber'};
+    const sLbl={'enabled':'Enabled','disabled':'Disabled','enabledForReportingButNotEnforced':'Report only'};
+    const tbody=document.getElementById('body-ca');tbody.innerHTML='';
+    ps.forEach((p,i)=>{
+      const sid='cad'+i;
+      const inc=p.conditions?.users?.includeUsers||[],grps=p.conditions?.users?.includeGroups||[];
+      const uLbl=inc.includes('All')?'All users':grps.length?grps.length+' groups':inc.length?inc.length+' users':'—';
+      const apps=p.conditions?.applications?.includeApplications||[];
+      const aLbl=apps.includes('All')?'All apps':apps.includes('None')?'None':apps.length?apps.length+' apps':'—';
+      const plat=p.conditions?.platforms?.includePlatforms||[];
+      const pLbl=plat.includes('all')?'All':plat.map(x=>PLAT_NAMES[x]||x).join(', ')||'Any';
+      const grants=p.grantControls?.builtInControls||[];
+      const gLbl=grants.length?grants.map(fmtGrant).join(', '):'—';
+      const tr=document.createElement('tr');tr.className='ca-row';
+      tr.innerHTML='<td><span class="exp">▶</span></td><td><strong>'+esc(p.displayName)+'</strong></td><td><span class="'+(sCls[p.state]||'bdg neutral')+'">'+esc(sLbl[p.state]||p.state)+'</span></td><td>'+esc(uLbl)+'</td><td>'+esc(aLbl)+'</td><td>'+esc(pLbl)+'</td><td>'+esc(gLbl)+'</td>';
+      tr.onclick=()=>toggleCA(tr,sid,p);tbody.appendChild(tr);
+      const dr=document.createElement('tr');dr.className='ca-det';dr.id=sid;
+      dr.innerHTML='<td colspan="7"><div class="ca-det-inner" id="'+sid+'-i"></div></td>';
+      tbody.appendChild(dr);
+    });
+    document.getElementById('tbl-ca').style.display='table';
+  }catch(e){permErr('ca','bdg-ca','kv-ca','ks-ca','Policy.Read.All',e.message)}
+}
+
+function fmtGrant(g){return({'mfa':'Require MFA','compliantDevice':'Compliant device','domainJoinedDevice':'Domain joined','approvedApplication':'Approved app','block':'Block'})[g]||g}
+
+function toggleCA(tr,sid,p){
+  tr.classList.toggle('open');
+  const dr=document.getElementById(sid);
+  if(dr.style.display==='table-row'){dr.style.display='none';return}
+  dr.style.display='table-row';
+  const c=p.conditions||{},g=p.grantControls||{},s=p.sessionControls||{},u=c.users||{},a=c.applications||{},pl=c.platforms||{};
+  function chips(arr,fn){if(!arr?.length)return'<span style="color:var(--text3);font-size:11px">None</span>';return arr.map(x=>'<span class="ca-chip">'+esc(fn?fn(x):x)+'</span>').join('')}
+  const secs=[
+    {t:'Users included',    v:chips(u.includeUsers)},
+    {t:'Users excluded',    v:chips(u.excludeUsers)},
+    {t:'Groups included',   v:chips(u.includeGroups)},
+    {t:'Groups excluded',   v:chips(u.excludeGroups)},
+    {t:'Apps included',     v:chips(a.includeApplications,x=>APP_NAMES[x]||x)},
+    {t:'Apps excluded',     v:chips(a.excludeApplications,x=>APP_NAMES[x]||x)},
+    {t:'Platforms',         v:chips(pl.includePlatforms,x=>PLAT_NAMES[x]||x)},
+    {t:'Grant controls',    v:chips(g.builtInControls,fmtGrant)+(g.operator?'<span class="ca-chip" style="background:var(--blue-lt);color:var(--blue)">Operator: '+esc(g.operator)+'</span>':'')},
+    {t:'Sign-in frequency', v:s.signInFrequency?.isEnabled?(s.signInFrequency.value+' '+s.signInFrequency.type):'Disabled'},
+    {t:'Persistent browser',v:s.persistentBrowser?.isEnabled?s.persistentBrowser.mode:'Disabled'},
+    {t:'App enforced',      v:s.applicationEnforcedRestrictions?.isEnabled?'Enabled':'Disabled'},
+    {t:'Cloud app security',v:s.cloudAppSecurity?.isEnabled?(s.cloudAppSecurity.cloudAppSecurityType||'Enabled'):'Disabled'},
+  ];
+  document.getElementById(sid+'-i').innerHTML=secs.map(s=>'<div class="ca-group"><div class="ca-group-lbl">'+esc(s.t)+'</div><div class="ca-chips">'+s.v+'</div></div>').join('');
+}
+
+// ── AUTH METHODS ──────────────────────────────────────────────────────
+async function loadMFA(){
+  try{
+    const data=await gFetch('/policies/authenticationMethodsPolicy',true);
+    hide('ld-mfa');
+    const methods=data.authenticationMethodConfigurations||[];
+    BP_DATA.mfaMethods=methods;
+    document.getElementById('kv-mfa').textContent=enabled;
+    document.getElementById('ks-mfa').textContent='of '+methods.length;
+    document.getElementById('bdg-mfa').textContent=enabled+'/'+methods.length+' enabled';
+    setCount('tc-mfa',enabled+'/'+methods.length);
+    if(!methods.length){show('emp-mfa');return}
+    const names={'MicrosoftAuthenticatorAuthenticationMethodConfiguration':'Microsoft Authenticator','FidoAuthenticationMethodConfiguration':'FIDO2 Security Keys','SmsAuthenticationMethodConfiguration':'SMS','TemporaryAccessPassAuthenticationMethodConfiguration':'Temp Access Pass','SoftwareOathAuthenticationMethodConfiguration':'Software OATH / TOTP','VoiceAuthenticationMethodConfiguration':'Voice Call','EmailAuthenticationMethodConfiguration':'Email OTP','X509CertificateAuthenticationMethodConfiguration':'Certificate-Based Auth','HardwareOathAuthenticationMethodConfiguration':'Hardware OATH Token'};
+    const grid=document.getElementById('grid-mfa');
+    grid.innerHTML=methods.map(m=>{const on=m.state==='enabled';const key=(m['@odata.type']||'').replace('#microsoft.graph.','');const nm=names[key]||m.id||key;return'<div class="mth-cell"><span class="mth-name">'+esc(nm)+'</span><span class="mth-st"><span class="dot '+(on?'on':'off')+'"></span><span style="color:'+(on?'var(--green)':'var(--text3)')+'">'+( on?'Enabled':'Disabled')+'</span></span></div>'}).join('');
+    grid.style.display='grid';
+  }catch(e){permErr('mfa','bdg-mfa','kv-mfa','ks-mfa','Policy.Read.All',e.message)}
+}
+
+// ── USERS ─────────────────────────────────────────────────────────────
+async function loadUsers(){
+  try{
+    const data=await gFetch('/users?$select=displayName,userPrincipalName,userType,accountEnabled,createdDateTime&$top=100&$orderby=displayName');
+    hide('ld-users');
+    const users=data.value||[];
+    BP_DATA.users=users;
+    document.getElementById('kv-users').textContent=users.length;
+    document.getElementById('ks-users').textContent=disabled+' disabled';
+    document.getElementById('bdg-users').textContent=users.length+' users';
+    setCount('tc-users',users.length);
+    if(!users.length){show('emp-users');return}
+    document.getElementById('body-users').innerHTML=users.map(u=>{
+      const guest=(u.userType||'').toLowerCase()==='guest';
+      const enabled=u.accountEnabled!==false;
+      return '<tr><td><div class="cell-name">'+esc(u.displayName||'—')+'</div></td><td class="mono">'+esc(u.userPrincipalName||'—')+'</td><td>'+(guest?'<span class="bdg amber">Guest</span>':'<span class="bdg neutral">Member</span>')+'</td><td><span class="'+(enabled?'bdg green':'bdg red')+'">'+(enabled?'Enabled':'Disabled')+'</span></td><td class="mono">'+fmtDate(u.createdDateTime)+'</td></tr>';
+    }).join('');
+    document.getElementById('tbl-users').style.display='table';
+  }catch(e){permErr('users','bdg-users','kv-users','ks-users','User.Read.All',e.message)}
+}
+
+// ── DEVICES ───────────────────────────────────────────────────────────
+async function loadDevices(){
+  try{
+    const data=await gFetch('/devices?$select=displayName,operatingSystem,operatingSystemVersion,isCompliant,trustType,approximateLastSignInDateTime&$top=100&$orderby=displayName');
+    hide('ld-devices');
+    const devs=data.value||[];
+    const compliant=devs.filter(d=>d.isCompliant).length;
+    document.getElementById('bdg-devices').textContent=devs.length+' devices';
+    setCount('tc-devices',devs.length);
+    if(!devs.length){show('emp-devices');return}
+    const trustMap={'AzureAd':'Entra Joined','ServerAd':'Hybrid Joined','Workplace':'Registered'};
+    document.getElementById('body-devices').innerHTML=devs.map(d=>{
+      const comp=d.isCompliant===true?'<span class="bdg green">Compliant</span>':d.isCompliant===false?'<span class="bdg red">Non-compliant</span>':'<span class="bdg neutral">Unknown</span>';
+      return '<tr><td><div class="cell-name">'+esc(d.displayName||'—')+'</div></td><td>'+esc((d.operatingSystem||'—')+(d.operatingSystemVersion?' '+d.operatingSystemVersion:''))+'</td><td><span class="bdg blue">'+esc(trustMap[d.trustType]||d.trustType||'—')+'</span></td><td>'+comp+'</td><td class="mono">'+fmtDate(d.approximateLastSignInDateTime)+'</td></tr>';
+    }).join('');
+    document.getElementById('tbl-devices').style.display='table';
+  }catch(e){permErr('devices','bdg-devices',null,null,'Directory.Read.All',e.message)}
+}
+
+// ── APPS ──────────────────────────────────────────────────────────────
+async function loadApps(){
+  try{
+    const data=await gFetch('/servicePrincipals?$select=displayName,appId,publisherName,accountEnabled,servicePrincipalType&$filter=servicePrincipalType eq \'Application\'&$top=100&$orderby=displayName');
+    hide('ld-apps');
+    const apps=data.value||[];
+    BP_DATA.apps=apps;
+    setCount('tc-apps',apps.length);
+    if(!apps.length){show('emp-apps');return}
+    document.getElementById('body-apps').innerHTML=apps.map(a=>{
+      const enabled=a.accountEnabled!==false;
+      return '<tr><td><div class="cell-name">'+esc(a.displayName||'—')+'</div></td><td class="mono" style="font-size:10px">'+esc((a.appId||'').substring(0,18)+'…')+'</td><td>'+esc(a.publisherName||'—')+'</td><td><span class="'+(enabled?'bdg green':'bdg neutral')+'">'+(enabled?'Enabled':'Disabled')+'</span></td></tr>';
+    }).join('');
+    document.getElementById('tbl-apps').style.display='table';
+  }catch(e){permErr('apps','bdg-apps',null,null,'Directory.Read.All',e.message)}
+}
+
+// ── GROUPS ────────────────────────────────────────────────────────────
+async function loadGroups(){
+  try{
+    const data=await gFetch('/groups?$select=displayName,groupTypes,mail,membershipRule,createdDateTime,members&$top=100&$orderby=displayName');
+    hide('ld-groups');
+    const groups=data.value||[];
+    document.getElementById('bdg-groups').textContent=groups.length+' groups';
+    setCount('tc-groups',groups.length);
+    if(!groups.length){show('emp-groups');return}
+
+    // Fetch member counts in batches of 10
+    const counts={};
+    const chunks=[];
+    for(let i=0;i<Math.min(groups.length,50);i+=10)chunks.push(groups.slice(i,i+10));
+    for(const chunk of chunks){
+      await Promise.all(chunk.map(async g=>{
+        try{const r=await gFetch('/groups/'+g.id+'/members/$count',false);counts[g.id]=r}catch(e){counts[g.id]='—'}
+      }));
+    }
+
+    document.getElementById('body-groups').innerHTML=groups.map(g=>{
+      const isDynamic=(g.groupTypes||[]).includes('DynamicMembership');
+      const isM365=(g.groupTypes||[]).includes('Unified');
+      const typeLbl=isM365?'<span class="bdg blue">M365</span>':isDynamic?'<span class="bdg purple">Dynamic</span>':'<span class="bdg neutral">Security</span>';
+      return '<tr><td><div class="cell-name">'+esc(g.displayName||'—')+'</div></td><td>'+typeLbl+'</td><td>'+esc(counts[g.id]??'—')+'</td><td class="mono">'+esc(g.mail||'—')+'</td><td class="mono">'+fmtDate(g.createdDateTime)+'</td></tr>';
+    }).join('');
+    document.getElementById('tbl-groups').style.display='table';
+  }catch(e){permErr('groups','bdg-groups',null,null,'Directory.Read.All',e.message)}
+}
+
+// ── ADMIN ROLES ───────────────────────────────────────────────────────
+const KEY_ROLES=['Global Administrator','Security Administrator','Privileged Role Administrator','User Administrator','Exchange Administrator','SharePoint Administrator','Compliance Administrator','Conditional Access Administrator','Authentication Administrator','Cloud Application Administrator'];
+
+async function loadAdmins(){
+  try{
+    const rolesData=await gFetch('/directoryRoles?$select=id,displayName');
+    const roles=(rolesData.value||[]).filter(r=>KEY_ROLES.includes(r.displayName));
+    const results=await Promise.all(roles.slice(0,10).map(async role=>{
+      try{const m=await gFetch('/directoryRoles/'+role.id+'/members?$select=displayName,userPrincipalName,userType');return{role:role.displayName,members:m.value||[]}}
+      catch(e){return{role:role.displayName,members:[]}}
+    }));
+    const rows=results.flatMap(r=>r.members.map(m=>({role:r.role,member:m})));
+    BP_DATA.adminRows=results.flatMap(r=>r.members.map(m=>({role:r.role,...m})));
+
+    // Update all admin elements
+    ['admins','admins-ov'].forEach(key=>{
+      hide('ld-'+key);
+      document.getElementById('kv-admins')&&(document.getElementById('kv-admins').textContent=rows.length);
+      document.getElementById('ks-admins')&&(document.getElementById('ks-admins').textContent=roles.length+' roles');
+      const bdg=document.getElementById('bdg-'+key);if(bdg)bdg.textContent=rows.length+' members';
+      setCount('tc-admins',rows.length);
+      if(!rows.length){show('emp-'+key);return}
+      const tbody=document.getElementById('body-'+key);
+      if(!tbody)return;
+      tbody.innerHTML=rows.map(({role,member})=>{
+        const guest=(member.userType||'').toLowerCase()==='guest';
+        return '<tr><td><div class="cell-name">'+esc(member.displayName||'—')+'</div><div class="cell-sub">'+esc(member.userPrincipalName||'')+'</div></td><td><span class="bdg green" style="font-size:10px">'+esc(role)+'</span></td><td>'+(guest?'<span class="bdg amber">Guest</span>':'<span class="bdg neutral">Member</span>')+'</td></tr>';
+      }).join('');
+      document.getElementById('tbl-'+key).style.display='table';
+    });
+  }catch(e){
+    ['admins','admins-ov'].forEach(key=>permErr(key,'bdg-'+key,'kv-admins','ks-admins','Directory.Read.All',e.message));
+  }
+}
+
+// ── GUESTS ────────────────────────────────────────────────────────────
+async function loadGuests(){
+  try{
+    const data=await gFetch("/users?$filter=userType eq 'Guest'&$select=displayName,mail,userPrincipalName,externalUserState,createdDateTime&$top=100&$orderby=displayName");
+    const users=data.value||[];
+    BP_DATA.guests=users;
+    BP_DATA.guestsLoaded=true;
+    const stateCls={'Accepted':'bdg green','PendingAcceptance':'bdg amber'};
+    const rowHtml=users.map(u=>'<tr><td>'+esc(u.displayName||'—')+'</td><td class="mono">'+esc(u.mail||u.userPrincipalName||'—')+'</td><td class="mono">'+fmtDate(u.createdDateTime)+'</td><td><span class="'+(stateCls[u.externalUserState]||'bdg neutral')+'">'+esc(u.externalUserState||'—')+'</span></td></tr>').join('');
+    const rowHtmlOv=users.slice(0,10).map(u=>'<tr><td>'+esc(u.displayName||'—')+'</td><td class="mono">'+esc(u.mail||u.userPrincipalName||'—')+'</td><td><span class="'+(stateCls[u.externalUserState]||'bdg neutral')+'">'+esc(u.externalUserState||'—')+'</span></td></tr>').join('');
+
+    ['guests','guests-ov'].forEach(key=>{
+      hide('ld-'+key);
+      const bdg=document.getElementById('bdg-'+key);if(bdg)bdg.textContent=users.length+' guests';
+      setCount('tc-guests',users.length);
+      const tbody=document.getElementById('body-'+key);
+      if(!tbody)return;
+      if(!users.length){show('emp-'+key);return}
+      tbody.innerHTML=(key==='guests-ov'?rowHtmlOv:rowHtml);
+      const tbl=document.getElementById('tbl-'+key);if(tbl)tbl.style.display='table';
+    });
+  }catch(e){
+    ['guests','guests-ov'].forEach(key=>permErr(key,'bdg-'+key,null,null,'User.Read.All',e.message));
+  }
+}
+
+// ── SECURE SCORE ──────────────────────────────────────────────────────
+async function loadScore(){
+  try{
+    const [scoreData,ctrlData]=await Promise.all([
+      gFetch('/security/secureScores?$top=1'),
+      gFetch('/security/secureScoreControlProfiles?$top=100')
+    ]);
+    hide('ld-score');hide('ld-score-recs');
+
+    const score=scoreData.value?.[0];
+    if(score){
+      const cur=Math.round(score.currentScore||0);
+      const max=Math.round(score.maxScore||0);
+      const pct=max>0?Math.round(cur/max*100):0;
+      BP_DATA.scorePct=pct;
+      updateOvScore(cur,max);
+      document.getElementById('score-cur').textContent=cur;
+      document.getElementById('score-max').textContent='/ '+max;
+      document.getElementById('score-pct').textContent=pct+'% of max score';
+      const circ=2*Math.PI*50;
+      setTimeout(()=>{document.getElementById('score-ring-fill').style.strokeDashoffset=circ*(1-pct/100);},100);
+      // Color ring by score
+      const color=pct>=80?'#107c10':pct>=50?'#0078d4':'#a4262c';
+      document.getElementById('score-ring-fill').style.stroke=color;
+      show('score-ring-wrap');
+    }
+
+    const ctrls=ctrlData.value||[];
+    const notDone=ctrls.filter(c=>c.implementationStatus!=='implemented'&&c.userImpact!=='none').sort((a,b)=>(b.maxScore||0)-(a.maxScore||0));
+    document.getElementById('bdg-score').textContent=notDone.length+' actions';
+    setCount('tc-score',notDone.length);
+
+    if(!notDone.length){show('emp-score');return}
+
+    const catColor={'Identity':'blue','Data':'purple','Device':'teal','Apps':'orange','Infrastructure':'green'};
+    const maxPts=notDone[0]?.maxScore||1;
+    const list=document.getElementById('list-score');
+    list.innerHTML=notDone.slice(0,30).map(c=>{
+      const pts=c.maxScore||0;
+      const cat=c.controlCategory||'Other';
+      const pct=Math.round(pts/maxPts*100);
+      const barColor=catColor[cat]?`var(--${catColor[cat]})`:'var(--blue)';
+      return '<div class="rec-item"><span class="rec-cat"><span class="bdg '+(catColor[cat]||'neutral')+'" style="font-size:10px">'+esc(cat)+'</span></span><span class="rec-name">'+esc(c.title||'—')+'</span><div class="rec-bar-wrap"><div class="rec-bar" style="width:'+pct+'%;background:'+barColor+'"></div></div><span class="rec-pts">+'+pts+' pts</span></div>';
+    }).join('');
+    list.style.display='block';
+  }catch(e){
+    hide('ld-score');hide('ld-score-recs');
+    const el=document.getElementById('err-score');
+    if(el){el.innerHTML='<div class="perm-bar">⚠ '+esc(e.message)+'<br><small>Requires SecurityEvents.Read.All or may not be available on free tier.</small></div>';el.style.display='block'}
+    document.getElementById('kv-score').textContent='—';
+    document.getElementById('ks-score').textContent='Not available';
+  }
+}
+
+// ── GREETING ─────────────────────────────────────────────────────────
+function setGreeting(name){
+  const hr=new Date().getHours();
+  const g=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  document.getElementById('ov-hello').textContent=g+', '+name.split(' ')[0]+'!';
+  document.getElementById('ov-greeting').style.display='block';
+}
+
+// ── OVERVIEW SCORE BAR ────────────────────────────────────────────────
+function updateOvScore(cur,max){
+  const pct=max>0?Math.round(cur/max*100):0;
+  document.getElementById('ov-score-pct').textContent=pct+'%';
+  document.getElementById('ov-score-pts').textContent=cur+' / '+max+' pts';
+  setTimeout(()=>{document.getElementById('ov-score-bar').style.width=pct+'%'},100);
+  document.getElementById('kv-score').textContent=pct+'%';
+  document.getElementById('ks-score').textContent=cur+' / '+max+' pts';
+  document.getElementById('ov-sub').textContent='Your tenant security overview. Secure Score: '+pct+'% ('+cur+' / '+max+' points).';
+}
+
+// ── SECURITY EVENTS ───────────────────────────────────────────────────
+// High-severity operations to watch for (free-tier: uses /auditLogs if available,
+// falls back to graph-derived heuristics from service principals & directory roles)
+const HIGH_SEV_OPS=[
+  {cat:'Application consent', ops:['Consent to application','Add delegated permission grant','Add app role assignment to service principal'],icon:'consent',cls:'red'},
+  {cat:'New application',     ops:['Add application','Add service principal'],                                                                  icon:'app',   cls:'orange'},
+  {cat:'Role assignment',     ops:['Add member to role','Remove member from role','Add eligible member to role'],                               icon:'role',  cls:'purple'},
+  {cat:'Guest invite',        ops:['Invite external user','Redeem external user invite'],                                                       icon:'guest', cls:'amber'},
+  {cat:'CA policy change',    ops:['Add conditional access policy','Update conditional access policy','Delete conditional access policy'],       icon:'policy',cls:'blue'},
+  {cat:'MFA change',          ops:['Update authentication method','Disable strong authentication','Update user'],                               icon:'other', cls:'other'},
+];
+const HIGH_SEV_FLAT=HIGH_SEV_OPS.flatMap(h=>h.ops.map(op=>({op,icon:h.icon,cls:h.cls,cat:h.cat})));
+
+async function loadSecurityEvents(){
+  const listEl=document.getElementById('list-events');
+  try{
+    // Try audit logs first (requires AuditLog.Read.All)
+    const data=await gFetch('/auditLogs/directoryAudits?$top=50&$orderby=activityDateTime desc',true);
+    const logs=data.value||[];
+    // Filter to high-severity ops
+    const filtered=logs.filter(l=>{
+      const act=l.activityDisplayName||'';
+      return HIGH_SEV_FLAT.some(h=>act.toLowerCase().includes(h.op.toLowerCase()));
+    });
+    hide('ld-events');
+    document.getElementById('bdg-events').textContent=filtered.length+' events';
+    if(!filtered.length){show('emp-events');return}
+    listEl.innerHTML=filtered.map(l=>{
+      const act=l.activityDisplayName||'—';
+      const match=HIGH_SEV_FLAT.find(h=>act.toLowerCase().includes(h.op.toLowerCase()))||{icon:'other',cls:'other',cat:'Activity'};
+      const by=l.initiatedBy?.user?.displayName||l.initiatedBy?.user?.userPrincipalName||l.initiatedBy?.app?.displayName||'System';
+      const target=(l.targetResources||[]).map(t=>t.displayName||t.userPrincipalName||'').filter(Boolean).join(', ')||'—';
+      const time=l.activityDateTime?new Date(l.activityDateTime).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+      return evRow(match.icon,match.cls,act,by+' → '+target,'<span class="bdg '+match.cls+'" style="font-size:10px">'+esc(match.cat)+'</span>',time);
+    }).join('');
+    listEl.style.display='block';
+  }catch(auditErr){
+    // AuditLog not available — synthesize events from directory changes instead
+    hide('ld-events');
+    try{
+      // Fetch recently created service principals (new app registrations/consents)
+      const [sps,guests]=await Promise.all([
+        gFetch('/servicePrincipals?$select=displayName,createdDateTime,appId&$orderby=createdDateTime desc&$top=15'),
+        gFetch("/users?$filter=userType eq 'Guest'&$select=displayName,mail,createdDateTime&$orderby=createdDateTime desc&$top=10")
+      ]);
+      const events=[];
+      (sps.value||[]).forEach(sp=>{if(sp.createdDateTime)events.push({icon:'app',cls:'orange',cat:'New application',title:'New app: '+esc(sp.displayName||sp.appId||'—'),detail:'Service principal created',time:sp.createdDateTime})});
+      (guests.value||[]).forEach(g=>{if(g.createdDateTime)events.push({icon:'guest',cls:'amber',cat:'Guest invite',title:'Guest invited: '+esc(g.displayName||'—'),detail:esc(g.mail||'—'),time:g.createdDateTime})});
+      events.sort((a,b)=>new Date(b.time)-new Date(a.time));
+      document.getElementById('bdg-events').textContent=events.length+' recent';
+      if(!events.length){
+        listEl.innerHTML='<div style="padding:14px 18px;font-size:12px;color:var(--text3)">AuditLog.Read.All not granted — showing recent app & guest activity instead. Add <strong>AuditLog.Read.All</strong> to your App Registration for full event history.</div>';
+        listEl.style.display='block';return;
+      }
+      listEl.innerHTML='<div style="padding:10px 18px 6px;font-size:11px;color:var(--amber-text);background:var(--amber-lt);border-bottom:1px solid var(--border)">⚠ AuditLog.Read.All not granted — showing recent app & guest activity only. Add the permission for full event history.</div>'
+        +events.map(e=>evRow(e.icon,e.cls,e.title,e.detail,'<span class="bdg '+e.cls+'" style="font-size:10px">'+esc(e.cat)+'</span>',new Date(e.time).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))).join('');
+      listEl.style.display='block';
+    }catch(e2){
+      document.getElementById('bdg-events').textContent='Error';
+      listEl.innerHTML='<div class="perm-bar" style="margin:14px 18px">⚠ Could not load security events.<br><small>'+esc(e2.message)+'</small></div>';
+      listEl.style.display='block';
+    }
+  }
+}
+
+function evRow(icon,cls,title,detail,badgeHtml,time){
+  const icons={
+    consent:'<path d="M9 1a7 7 0 100 14A7 7 0 009 1zM8 5h2v5H8V5zm0 6h2v2H8v-2z"/>',
+    app:    '<path d="M0 1.5A1.5 1.5 0 011.5 0h13A1.5 1.5 0 0116 1.5v13a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 010 14.5v-13z"/>',
+    role:   '<path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/>',
+    guest:  '<path d="M8 8a3 3 0 100-6 3 3 0 000 6z"/>',
+    policy: '<path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/>',
+    other:  '<path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 5h2v5H7V5zm0 6h2v2H7v-2z"/>',
+  };
+  return`<div class="ev-item"><div class="ev-icon ${icon}"><svg viewBox="0 0 16 16" fill="currentColor">${icons[icon]||icons.other}</svg></div><div class="ev-body"><div class="ev-title">${title}</div><div class="ev-detail">${detail}</div></div><div class="ev-right">${badgeHtml}<span class="ev-time">${time}</span></div></div>`;
+}
+
+// ── BEST PRACTICE CHECKS ──────────────────────────────────────────────
+// Each check uses data already loaded by other functions (no extra API calls).
+// Results are stored in a shared state object populated by each loader.
+const BP_STATE={caLoaded:false,mfaLoaded:false,usersLoaded:false,adminsLoaded:false,guestsLoaded:false,scoreLoaded:false};
+const BP_DATA={caPolicies:[],mfaMethods:[],users:[],adminRows:[],guests:[],scorePct:null};
+
+function runBestPracticeChecks(){
+  hide('ld-bp');
+  const checks=[
+    checkMfaEnabled(),
+    checkCAExists(),
+    checkCAAllUsers(),
+    checkGlobalAdminCount(),
+    checkGuestUsers(),
+    checkLegacyAuth(),
+    checkSmsOnly(),
+    checkSecureScore(),
+  ];
+  const pass=checks.filter(c=>c.status==='pass').length;
+  const fail=checks.filter(c=>c.status==='fail').length;
+  const warn=checks.filter(c=>c.status==='warn').length;
+  document.getElementById('bdg-bp').textContent=pass+' pass · '+fail+' fail';
+  document.getElementById('bdg-bp').className='bdg '+(fail>0?'red':warn>0?'amber':'green');
+  const el=document.getElementById('list-bp');
+  el.innerHTML=checks.map(c=>{
+    const icons={
+      pass:'<path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/>',
+      fail:'<path d="M4.646 4.646a.5.5 0 01.708 0L8 7.293l2.646-2.647a.5.5 0 01.708.708L8.707 8l2.647 2.646a.5.5 0 01-.708.708L8 8.707l-2.646 2.647a.5.5 0 01-.708-.708L7.293 8 4.646 5.354a.5.5 0 010-.708z"/>',
+      warn:'<path d="M8.982 1.566a1.13 1.13 0 00-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 01-1.1 0L7.1 5.995A.905.905 0 018 5zm.002 6a1 1 0 110 2 1 1 0 010-2z"/>',
+      info:'<path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a1 1 0 110 2 1 1 0 010-2zm0 3a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/>',
+      load:'<path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/>',
+    };
+    return`<div class="bp-item"><div class="bp-icon ${c.status}"><svg viewBox="0 0 16 16" fill="currentColor">${icons[c.status]||icons.info}</svg></div><div class="bp-text"><div class="bp-name">${esc(c.name)}</div><div class="bp-desc">${esc(c.desc)}</div></div><span class="bdg ${c.status==='pass'?'green':c.status==='fail'?'red':c.status==='warn'?'amber':'neutral'}" style="font-size:10px;flex-shrink:0">${c.status==='pass'?'Pass':c.status==='fail'?'Fail':c.status==='warn'?'Review':'Info'}</span></div>`;
+  }).join('');
+  el.style.display='block';
+}
+
+function checkMfaEnabled(){
+  if(!BP_DATA.mfaMethods.length)return{name:'MFA enabled for users',desc:'Could not verify — auth methods data unavailable.',status:'info'};
+  const auth=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('MicrosoftAuthenticator'));
+  const fido=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('Fido'));
+  const totp=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('SoftwareOath'));
+  const anyStrong=[auth,fido,totp].some(m=>m?.state==='enabled');
+  return anyStrong
+    ?{name:'Strong MFA method enabled',desc:'Microsoft Authenticator, FIDO2, or TOTP is enabled in your tenant.',status:'pass'}
+    :{name:'No strong MFA method enabled',desc:'Enable Microsoft Authenticator, FIDO2 Security Keys, or Software OATH for phishing-resistant MFA.',status:'fail'};
+}
+
+function checkCAExists(){
+  if(!BP_DATA.caPolicies.length)return{name:'Conditional Access policies exist',desc:'No CA policies found or Policy.Read.All not granted.',status:'fail'};
+  const enabled=BP_DATA.caPolicies.filter(p=>p.state==='enabled');
+  return enabled.length>0
+    ?{name:'Conditional Access policies active',desc:enabled.length+' enabled CA polic'+(enabled.length===1?'y':'ies')+' found.',status:'pass'}
+    :{name:'No enabled Conditional Access policies',desc:'All CA policies are disabled or in report-only mode. Enable at least one policy.',status:'warn'};
+}
+
+function checkCAAllUsers(){
+  if(!BP_DATA.caPolicies.length)return{name:'CA policy covers all users',desc:'Cannot verify — no CA policies loaded.',status:'info'};
+  const hasAllUsers=BP_DATA.caPolicies.some(p=>p.state==='enabled'&&(p.conditions?.users?.includeUsers||[]).includes('All'));
+  return hasAllUsers
+    ?{name:'CA policy covers all users',desc:'At least one enabled policy applies to all users.',status:'pass'}
+    :{name:'No CA policy covers all users',desc:'Consider a baseline CA policy (e.g. require MFA) that targets all users.',status:'warn'};
+}
+
+function checkGlobalAdminCount(){
+  const gas=BP_DATA.adminRows.filter(r=>r.role==='Global Administrator');
+  if(!gas.length)return{name:'Global Administrator count',desc:'Could not verify — admin data unavailable.',status:'info'};
+  return gas.length<=3
+    ?{name:'Global Administrator count acceptable',desc:gas.length+' Global Admin'+(gas.length===1?'':'s')+' found. Best practice: 2–4 break-glass accounts.',status:'pass'}
+    :{name:'Too many Global Administrators',desc:gas.length+' Global Admins found. Microsoft recommends fewer than 5. Use specific admin roles instead.',status:'fail'};
+}
+
+function checkGuestUsers(){
+  const pending=BP_DATA.guests.filter(g=>g.externalUserState==='PendingAcceptance');
+  if(pending.length>0)return{name:'Pending guest invitations',desc:pending.length+' guest invitation'+(pending.length===1?'':'s')+' still pending. Review and revoke stale invites.',status:'warn'};
+  if(BP_DATA.guests.length>50)return{name:'High guest user count',desc:BP_DATA.guests.length+' guest users. Review regularly and remove inactive guests.',status:'warn'};
+  return{name:'Guest user hygiene',desc:BP_DATA.guests.length+' guest users, none pending. Keep reviewing quarterly.',status:'pass'};
+}
+
+function checkLegacyAuth(){
+  if(!BP_DATA.caPolicies.length)return{name:'Legacy authentication blocked',desc:'Cannot verify — no CA policies loaded.',status:'info'};
+  const blocks=BP_DATA.caPolicies.some(p=>p.state==='enabled'&&(p.conditions?.clientAppTypes||[]).some(t=>['exchangeActiveSync','other'].includes(t))&&(p.grantControls?.builtInControls||[]).includes('block'));
+  return blocks
+    ?{name:'Legacy authentication blocked',desc:'A CA policy blocks legacy auth clients (EAS / other). Good.',status:'pass'}
+    :{name:'Legacy authentication not explicitly blocked',desc:'Create a CA policy that blocks legacy auth clients to prevent credential spray attacks.',status:'warn'};
+}
+
+function checkSmsOnly(){
+  if(!BP_DATA.mfaMethods.length)return{name:'SMS-only MFA check',desc:'Cannot verify — auth methods unavailable.',status:'info'};
+  const sms=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('Sms'));
+  const authenticator=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('MicrosoftAuthenticator'));
+  if(sms?.state==='enabled'&&authenticator?.state!=='enabled')
+    return{name:'SMS is the only MFA method',desc:'SMS MFA is vulnerable to SIM-swap. Enable Microsoft Authenticator as a stronger alternative.',status:'warn'};
+  return{name:'SMS MFA not sole method',desc:'Stronger MFA methods are available alongside or instead of SMS.',status:'pass'};
+}
+
+function checkSecureScore(){
+  if(BP_DATA.scorePct===null)return{name:'Secure Score',desc:'Secure Score data unavailable — add SecurityEvents.Read.All permission.',status:'info'};
+  const pct=BP_DATA.scorePct;
+  return pct>=70
+    ?{name:'Secure Score above 70%',desc:'Current score: '+pct+'%. Good security posture. Continue working through improvement actions.',status:'pass'}
+    :pct>=40
+    ?{name:'Secure Score below 70%',desc:'Current score: '+pct+'%. Review the Secure Score tab for improvement actions.',status:'warn'}
+    :{name:'Secure Score critically low',desc:'Current score: '+pct+'%. Immediate action needed — check the Secure Score tab.',status:'fail'};
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// COMPLIANCE ENGINE — CIS M365, NIST 800-53, ISO 27001, MITRE ATT&CK
+// ═══════════════════════════════════════════════════════════════════════
+
+// ── CONTROL CATALOGUE ──────────────────────────────────────────────────
+// Each control: { id, title, description, severity, frameworks:{CIS,NIST,ISO,MITRE},
+//   check(BP_DATA) → {status:'pass'|'fail'|'warn'|'info'|'na', detail},
+//   remediation, learnMore }
+
+const CONTROLS=[
+  {
+    id:'EV-001',title:'Require MFA for all users',
+    description:'At least one strong MFA method (Authenticator, FIDO2, or TOTP) must be enabled and a Conditional Access policy must enforce MFA for all users.',
+    severity:'critical',
+    frameworks:{CIS:'1.1.1',NIST:'IA-2(1)',ISO:'A.9.4.2',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      const strong=['MicrosoftAuthenticator','Fido','SoftwareOath'];
+      const hasStrong=d.mfaMethods.some(m=>strong.some(s=>(m['@odata.type']||'').includes(s))&&m.state==='enabled');
+      const hasCAMFA=d.caPolicies.some(p=>p.state==='enabled'&&(p.grantControls?.builtInControls||[]).includes('mfa'));
+      if(!hasStrong&&!hasCAMFA)return{status:'fail',detail:'No strong MFA method enabled and no CA policy enforcing MFA.'};
+      if(!hasStrong)return{status:'warn',detail:'MFA is enforced via CA but no strong method is enabled.'};
+      if(!hasCAMFA)return{status:'warn',detail:'Strong MFA method enabled but no CA policy enforces it for all users.'};
+      return{status:'pass',detail:'Strong MFA enabled and CA policy enforces MFA.'};
+    },
+    remediation:'Enable Microsoft Authenticator in Authentication Methods Policy. Create a CA policy: All users → Require MFA.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-policy-all-users-mfa'
+  },
+  {
+    id:'EV-002',title:'Block legacy authentication protocols',
+    description:'Legacy authentication clients (Exchange Active Sync, IMAP, POP3, SMTP Auth) do not support MFA and must be blocked via Conditional Access.',
+    severity:'critical',
+    frameworks:{CIS:'1.1.4',NIST:'AC-17',ISO:'A.9.4.2',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      const blocks=d.caPolicies.some(p=>p.state==='enabled'
+        &&(p.conditions?.clientAppTypes||[]).some(t=>['exchangeActiveSync','other'].includes(t))
+        &&(p.grantControls?.builtInControls||[]).includes('block'));
+      return blocks
+        ?{status:'pass',detail:'CA policy blocking legacy authentication clients found.'}
+        :{status:'fail',detail:'No CA policy found that blocks legacy authentication. Create one targeting clientAppTypes: exchangeActiveSync, other → Block.'};
+    },
+    remediation:'Create a CA policy: All users, client apps = Exchange Active Sync + Other → Block access.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/conditional-access/block-legacy-authentication'
+  },
+  {
+    id:'EV-003',title:'Conditional Access policy covers all users',
+    description:'At least one enabled CA policy must apply to all users in the directory to ensure baseline security coverage.',
+    severity:'high',
+    frameworks:{CIS:'1.1.3',NIST:'AC-2',ISO:'A.9.1.1',MITRE:'T1078.004 — Cloud Accounts'},
+    check(d){
+      if(!d.caPolicies.length)return{status:'fail',detail:'No Conditional Access policies found.'};
+      const hasAll=d.caPolicies.some(p=>p.state==='enabled'&&(p.conditions?.users?.includeUsers||[]).includes('All'));
+      return hasAll
+        ?{status:'pass',detail:'At least one enabled CA policy targets all users.'}
+        :{status:'warn',detail:'No enabled CA policy targets all users. Some users may not be covered.'};
+    },
+    remediation:'Review CA policies and ensure at least one baseline policy (e.g. require MFA) targets All users.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview'
+  },
+  {
+    id:'EV-004',title:'Limit Global Administrator count',
+    description:'Microsoft recommends 2–4 Global Administrators. Having too many increases the attack surface for privilege escalation.',
+    severity:'high',
+    frameworks:{CIS:'1.1.19',NIST:'AC-6',ISO:'A.9.2.3',MITRE:'T1078.004 — Cloud Accounts'},
+    check(d){
+      const gas=d.adminRows.filter(r=>r.role==='Global Administrator');
+      if(!gas.length)return{status:'info',detail:'Could not verify — admin data not loaded.'};
+      if(gas.length===0)return{status:'warn',detail:'No Global Administrators found. At least 2 break-glass accounts recommended.'};
+      if(gas.length<=4)return{status:'pass',detail:`${gas.length} Global Administrator(s) found — within recommended range.`};
+      return{status:'fail',detail:`${gas.length} Global Administrators found. Reduce to 4 or fewer. Use specific admin roles instead.`};
+    },
+    remediation:'Remove unnecessary Global Admin assignments. Use Privileged Role Administrator, Security Administrator, or other least-privilege roles.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/best-practices'
+  },
+  {
+    id:'EV-005',title:'No guest users with admin roles',
+    description:'Guest accounts (B2B users) must not hold privileged admin roles. Guest accounts have less visibility and are harder to monitor.',
+    severity:'critical',
+    frameworks:{CIS:'1.1.20',NIST:'AC-6(5)',ISO:'A.9.2.3',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      const guestAdmins=d.adminRows.filter(r=>(r.userType||'').toLowerCase()==='guest');
+      return guestAdmins.length===0
+        ?{status:'pass',detail:'No guest users found in privileged admin roles.'}
+        :{status:'fail',detail:`${guestAdmins.length} guest account(s) have admin roles: ${guestAdmins.map(r=>r.displayName||r.userPrincipalName).join(', ')}`};
+    },
+    remediation:'Remove guest users from all admin roles immediately. Create internal accounts for any legitimate admin guests.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-planning'
+  },
+  {
+    id:'EV-006',title:'SMS is not the sole MFA method',
+    description:'SMS-based MFA is vulnerable to SIM-swap attacks and SS7 interception. Stronger alternatives must be available.',
+    severity:'medium',
+    frameworks:{CIS:'1.1.2',NIST:'IA-2(2)',ISO:'A.9.4.2',MITRE:'T1111 — MFA Interception'},
+    check(d){
+      const sms=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('Sms'));
+      const auth=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('MicrosoftAuthenticator'));
+      const fido=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('Fido'));
+      const totp=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('SoftwareOath'));
+      if(!d.mfaMethods.length)return{status:'info',detail:'Auth methods data not available.'};
+      const smsOn=sms?.state==='enabled';
+      const strongOn=[auth,fido,totp].some(m=>m?.state==='enabled');
+      if(smsOn&&!strongOn)return{status:'fail',detail:'SMS is the only active MFA method. Enable Microsoft Authenticator or FIDO2 as a stronger alternative.'};
+      return{status:'pass',detail:strongOn?'Strong MFA method active alongside or instead of SMS.':'SMS not enabled — ensure another MFA method is active.'};
+    },
+    remediation:'Enable Microsoft Authenticator app in Authentication Methods Policy. Consider disabling SMS for new users.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/authentication/concept-authentication-methods'
+  },
+  {
+    id:'EV-007',title:'Microsoft Authenticator enabled',
+    description:'Microsoft Authenticator provides phishing-resistant push notifications and number matching. It should be the primary MFA method.',
+    severity:'medium',
+    frameworks:{CIS:'1.1.1',NIST:'IA-2(1)',ISO:'A.9.4.2',MITRE:'T1111 — MFA Interception'},
+    check(d){
+      const auth=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('MicrosoftAuthenticator'));
+      if(!d.mfaMethods.length)return{status:'info',detail:'Auth methods data not available.'};
+      return auth?.state==='enabled'
+        ?{status:'pass',detail:'Microsoft Authenticator is enabled.'}
+        :{status:'warn',detail:'Microsoft Authenticator is not enabled. It is the recommended primary MFA method.'};
+    },
+    remediation:'Go to Entra ID → Authentication Methods → Microsoft Authenticator → Enable.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/authentication/howto-authentication-passwordless-phone'
+  },
+  {
+    id:'EV-008',title:'FIDO2 security keys available',
+    description:'FIDO2 security keys provide the strongest phishing-resistant authentication. They should be enabled for high-privilege users.',
+    severity:'low',
+    frameworks:{CIS:'1.1.1',NIST:'IA-2(6)',ISO:'A.9.4.2',MITRE:'T1111 — MFA Interception'},
+    check(d){
+      const fido=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('Fido'));
+      if(!d.mfaMethods.length)return{status:'info',detail:'Auth methods data not available.'};
+      return fido?.state==='enabled'
+        ?{status:'pass',detail:'FIDO2 security keys are enabled.'}
+        :{status:'warn',detail:'FIDO2 security keys not enabled. Consider enabling for privileged users.'};
+    },
+    remediation:'Enable FIDO2 Security Keys in Authentication Methods Policy. Assign to admin and high-value accounts.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/authentication/howto-authentication-passwordless-security-key'
+  },
+  {
+    id:'EV-009',title:'Temporary Access Pass configured',
+    description:'Temporary Access Pass (TAP) enables secure onboarding and MFA recovery without requiring a phone. It should be enabled with short validity periods.',
+    severity:'low',
+    frameworks:{CIS:'1.1.1',NIST:'IA-2',ISO:'A.9.4.2',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      const tap=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('TemporaryAccessPass'));
+      if(!d.mfaMethods.length)return{status:'info',detail:'Auth methods data not available.'};
+      return tap?.state==='enabled'
+        ?{status:'pass',detail:'Temporary Access Pass is enabled for secure onboarding.'}
+        :{status:'warn',detail:'TAP is not enabled. Without it, MFA recovery and onboarding may fall back to weaker methods.'};
+    },
+    remediation:'Enable Temporary Access Pass in Authentication Methods with a short max lifetime (e.g. 1 hour).',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/authentication/howto-authentication-temporary-access-pass'
+  },
+  {
+    id:'EV-010',title:'Stale guest invitations reviewed',
+    description:'Guest invitations that remain in PendingAcceptance state may represent accounts that were invited erroneously or to ex-partners.',
+    severity:'medium',
+    frameworks:{CIS:'1.1.22',NIST:'AC-2(3)',ISO:'A.9.2.6',MITRE:'T1078.004 — Cloud Accounts'},
+    check(d){
+      const pending=d.guests.filter(g=>g.externalUserState==='PendingAcceptance');
+      if(!d.guests.length&&d.guestsLoaded)return{status:'pass',detail:'No guest users in the directory.'};
+      if(!d.guests.length)return{status:'info',detail:'Guest data not loaded.'};
+      return pending.length===0
+        ?{status:'pass',detail:`${d.guests.length} guest user(s) — none with pending invitations.`}
+        :{status:'warn',detail:`${pending.length} pending guest invitation(s). Review and revoke stale invites.`};
+    },
+    remediation:'Review pending guest invitations in Users → Guest users. Revoke any that are no longer needed.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/external-id/manage-guest-access-with-access-reviews'
+  },
+  {
+    id:'EV-011',title:'Guest user count monitored',
+    description:'A high number of guest users increases the external attack surface. Guest accounts should be reviewed quarterly.',
+    severity:'low',
+    frameworks:{CIS:'1.1.22',NIST:'AC-2',ISO:'A.9.2.1',MITRE:'T1078.004 — Cloud Accounts'},
+    check(d){
+      if(!d.guests.length&&!d.guestsLoaded)return{status:'info',detail:'Guest data not available.'};
+      const n=d.guests.length;
+      if(n>100)return{status:'warn',detail:`${n} guest users found. High guest count — conduct an access review.`};
+      return{status:'pass',detail:`${n} guest user(s) — within manageable range.`};
+    },
+    remediation:'Run an Azure AD Access Review for guest users. Remove inactive guests and restrict guest invitation permissions.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/id-governance/access-reviews-overview'
+  },
+  {
+    id:'EV-012',title:'Compliant device requirement in CA',
+    description:'Conditional Access should require device compliance (Intune) or Hybrid Azure AD Join for access to sensitive resources.',
+    severity:'high',
+    frameworks:{CIS:'6.1',NIST:'CM-6',ISO:'A.11.2.9',MITRE:'T1078.004 — Cloud Accounts'},
+    check(d){
+      const hasCompliant=d.caPolicies.some(p=>p.state==='enabled'&&(p.grantControls?.builtInControls||[]).includes('compliantDevice'));
+      const hasDomainJoin=d.caPolicies.some(p=>p.state==='enabled'&&(p.grantControls?.builtInControls||[]).includes('domainJoinedDevice'));
+      if(hasCompliant||hasDomainJoin)return{status:'pass',detail:'CA policy requiring compliant or Hybrid-joined device found.'};
+      return{status:'warn',detail:'No CA policy requiring device compliance found. Unmanaged devices can access tenant resources.'};
+    },
+    remediation:'Create a CA policy requiring Compliant device (Intune) or Hybrid Azure AD Joined for access to M365 apps.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/conditional-access/require-managed-devices'
+  },
+  {
+    id:'EV-013',title:'Named locations defined for CA policies',
+    description:'Defining trusted named locations allows CA policies to enforce stricter controls for sign-ins from unknown or risky locations.',
+    severity:'low',
+    frameworks:{CIS:'1.1.3',NIST:'AC-17(1)',ISO:'A.9.1.2',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      const usesLocations=d.caPolicies.some(p=>p.state==='enabled'&&p.conditions?.locations);
+      return usesLocations
+        ?{status:'pass',detail:'At least one CA policy uses location conditions.'}
+        :{status:'warn',detail:'No CA policies use named location conditions. Consider restricting sign-ins from untrusted countries.'};
+    },
+    remediation:'Define Named Locations (trusted IPs or countries) and add location conditions to CA policies.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/conditional-access/location-condition'
+  },
+  {
+    id:'EV-014',title:'Sign-in risk policy configured',
+    description:'CA policies should evaluate sign-in risk (unusual location, impossible travel, anonymous IP) and require MFA step-up or block high-risk sign-ins.',
+    severity:'high',
+    frameworks:{CIS:'1.1.5',NIST:'SI-4',ISO:'A.12.4.1',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      const hasRisk=d.caPolicies.some(p=>p.state==='enabled'&&p.conditions?.signInRiskLevels?.length>0);
+      return hasRisk
+        ?{status:'pass',detail:'CA policy with sign-in risk conditions found.'}
+        :{status:'warn',detail:'No CA policy evaluating sign-in risk. Requires Entra ID P2 for full functionality — configure if licensed.'};
+    },
+    remediation:'Create CA policies for medium and high sign-in risk requiring MFA or blocking access. Requires Entra ID P2.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/id-protection/howto-identity-protection-configure-risk-policies'
+  },
+  {
+    id:'EV-015',title:'Disabled accounts cleaned up',
+    description:'Disabled user accounts should be reviewed and removed if no longer needed. They can be re-enabled by attackers who gain admin access.',
+    severity:'medium',
+    frameworks:{CIS:'1.1.15',NIST:'AC-2(3)',ISO:'A.9.2.6',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      if(!d.users.length)return{status:'info',detail:'User data not loaded.'};
+      const disabled=d.users.filter(u=>u.accountEnabled===false);
+      const pct=Math.round(disabled.length/d.users.length*100);
+      if(pct>20)return{status:'warn',detail:`${disabled.length} disabled accounts (${pct}% of users). Review and remove inactive accounts.`};
+      return{status:'pass',detail:`${disabled.length} disabled account(s) (${pct}%). Within acceptable range.`};
+    },
+    remediation:'Review disabled accounts quarterly. Delete accounts for departed employees. Use Joiner-Mover-Leaver workflows.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/users/users-bulk-delete'
+  },
+  {
+    id:'EV-016',title:'Application consent policy restricted',
+    description:'Users must not be able to consent to applications accessing tenant data without admin approval. This prevents OAuth phishing attacks.',
+    severity:'critical',
+    frameworks:{CIS:'2.1',NIST:'AC-3',ISO:'A.9.4.1',MITRE:'T1550.001 — Application Access Token'},
+    check(d){
+      const events=d.caPolicies; // proxy — we check for app-related CA policies
+      // Try checking via authorization policy if available
+      if(d.authorizationPolicy){
+        const pol=d.authorizationPolicy;
+        const restricted=pol.defaultUserRolePermissions?.allowedToCreateApps===false
+          ||pol.permissionGrantPolicyIdsAssignedToDefaultUserRole?.every(p=>p.includes('ManagePermissionGrantsForSelf')==false);
+        if(restricted)return{status:'pass',detail:'User app consent is restricted — admin approval required.'};
+        return{status:'fail',detail:'Users may be able to consent to applications. Restrict to admin-only consent.'};
+      }
+      return{status:'info',detail:'Could not verify — requires Directory.Read.All on /policies/authorizationPolicy. Check manually in Entra ID → Enterprise Apps → Consent and Permissions.'};
+    },
+    remediation:'Go to Entra ID → Enterprise applications → Consent and permissions → User consent settings → Do not allow user consent.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/configure-user-consent'
+  },
+  {
+    id:'EV-017',title:'Secure Score above threshold',
+    description:'Microsoft Secure Score measures overall security posture. A score below 50% indicates significant unaddressed security gaps.',
+    severity:'high',
+    frameworks:{CIS:'multiple',NIST:'CA-7',ISO:'A.18.2.1',MITRE:'multiple'},
+    check(d){
+      if(d.scorePct===null)return{status:'info',detail:'Secure Score not available — add SecurityEvents.Read.All permission.'};
+      if(d.scorePct>=70)return{status:'pass',detail:`Secure Score: ${d.scorePct}%. Above 70% threshold.`};
+      if(d.scorePct>=50)return{status:'warn',detail:`Secure Score: ${d.scorePct}%. Below recommended 70%. Review improvement actions.`};
+      return{status:'fail',detail:`Secure Score: ${d.scorePct}%. Critically low. Immediate action required.`};
+    },
+    remediation:'Review Secure Score improvement actions tab. Prioritise identity and MFA-related actions first.',
+    learnMore:'https://learn.microsoft.com/en-us/defender-xdr/microsoft-secure-score'
+  },
+  {
+    id:'EV-018',title:'No report-only CA policies left in production',
+    description:'CA policies in "Report-only" mode do not enforce controls. All production policies must be enabled.',
+    severity:'medium',
+    frameworks:{CIS:'1.1.3',NIST:'AC-2',ISO:'A.9.1.1',MITRE:'T1078 — Valid Accounts'},
+    check(d){
+      const reportOnly=d.caPolicies.filter(p=>p.state==='enabledForReportingButNotEnforced');
+      if(!d.caPolicies.length)return{status:'info',detail:'No CA policies data.'};
+      return reportOnly.length===0
+        ?{status:'pass',detail:'No CA policies in report-only mode.'}
+        :{status:'warn',detail:`${reportOnly.length} CA polic${reportOnly.length===1?'y':'ies'} in report-only mode: ${reportOnly.map(p=>p.displayName).join(', ')}`};
+    },
+    remediation:'Review report-only CA policies and enable them after confirming they do not break access.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-insights-reporting'
+  },
+  {
+    id:'EV-019',title:'Certificate-based authentication available',
+    description:'Certificate-Based Authentication (CBA) provides phishing-resistant authentication for smart-card and certificate users.',
+    severity:'low',
+    frameworks:{CIS:'1.1.1',NIST:'IA-2(6)',ISO:'A.9.4.2',MITRE:'T1111 — MFA Interception'},
+    check(d){
+      const cba=d.mfaMethods.find(m=>(m['@odata.type']||'').includes('X509Certificate'));
+      if(!d.mfaMethods.length)return{status:'info',detail:'Auth methods data not available.'};
+      return cba?.state==='enabled'
+        ?{status:'pass',detail:'Certificate-Based Authentication is enabled.'}
+        :{status:'info',detail:'CBA not enabled. Consider for government/regulated environments requiring smart card auth.'};
+    },
+    remediation:'Enable X.509 Certificate-Based Authentication in Authentication Methods if smart card usage is required.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/authentication/concept-certificate-based-authentication'
+  },
+  {
+    id:'EV-020',title:'Enterprise applications regularly reviewed',
+    description:'Service principals that have been disabled may indicate abandoned or compromised app integrations. All apps should be actively needed.',
+    severity:'medium',
+    frameworks:{CIS:'2.1',NIST:'CM-7',ISO:'A.12.6.1',MITRE:'T1550.001 — Application Access Token'},
+    check(d){
+      if(!d.apps||!d.apps.length)return{status:'info',detail:'Application data not loaded.'};
+      const disabled=d.apps.filter(a=>a.accountEnabled===false);
+      if(disabled.length>10)return{status:'warn',detail:`${disabled.length} disabled enterprise applications found. Review and remove unused apps.`};
+      return{status:'pass',detail:`${d.apps.length} enterprise apps — ${disabled.length} disabled. Review disabled apps periodically.`};
+    },
+    remediation:'Remove enterprise applications that are no longer in use. Disable app consent for unused integrations.',
+    learnMore:'https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/manage-application-permissions'
+  },
+];
+
+// ── COMPLIANCE STATE ────────────────────────────────────────────────────
+let COMP_RESULTS=[];
+let COMP_FILTER_FW='all';
+let COMP_FILTER_SEV='all';
+let COMP_FILTER_STAT='all';
+
+// ── RUN ALL CHECKS ──────────────────────────────────────────────────────
+async function runCompliance(){
+  hide('ld-compliance');
+
+  // Fetch authorization policy for EV-016
+  try{
+    const ap=await gFetch('/policies/authorizationPolicy');
+    BP_DATA.authorizationPolicy=ap;
+  }catch(e){BP_DATA.authorizationPolicy=null}
+
+  // Run all controls
+  COMP_RESULTS=CONTROLS.map(ctrl=>{
+    let result;
+    try{result=ctrl.check(BP_DATA);}
+    catch(e){result={status:'info',detail:'Check error: '+e.message};}
+    return{...ctrl,...result};
+  });
+
+  renderCompliance();
+  updateComplianceScores();
+  setCount('tc-compliance', COMP_RESULTS.filter(r=>r.status==='fail').length+' fail');
+}
+
+// ── RENDER TABLE ────────────────────────────────────────────────────────
+function renderCompliance(){
+  const filtered=COMP_RESULTS.filter(r=>{
+    if(COMP_FILTER_FW!=='all'&&!r.frameworks[COMP_FILTER_FW])return false;
+    if(COMP_FILTER_SEV!=='all'&&r.severity!==COMP_FILTER_SEV)return false;
+    if(COMP_FILTER_STAT!=='all'&&r.status!==COMP_FILTER_STAT)return false;
+    return true;
+  });
+
+  document.getElementById('bdg-compliance').textContent=filtered.length+' controls';
+
+  const sevOrder={critical:0,high:1,medium:2,low:3};
+  const statOrder={fail:0,warn:1,info:2,na:3,pass:4};
+  // Sort: severity first, then status within severity (fail before pass)
+  filtered.sort((a,b)=>(sevOrder[a.severity]??9)-(sevOrder[b.severity]??9)||(statOrder[a.status]??5)-(statOrder[b.status]??5));
+
+  const tbody=document.getElementById('body-compliance');
+  tbody.innerHTML='';
+
+  // Group by severity with headers
+  const severities=['critical','high','medium','low'];
+  const sevLabels={critical:'🔴 Critical',high:'🟠 High',medium:'🟡 Medium',low:'⚪ Low'};
+  let lastSev=null;
+
+  filtered.forEach((r,i)=>{
+    // Insert severity group header row when severity changes
+    if(r.severity!==lastSev){
+      lastSev=r.severity;
+      const htr=document.createElement('tr');
+      const grpCount=filtered.filter(x=>x.severity===r.severity).length;
+      const failCount=filtered.filter(x=>x.severity===r.severity&&x.status==='fail').length;
+      htr.innerHTML=`<td colspan="8" style="background:var(--surface2);padding:8px 18px;font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--border);border-top:2px solid var(--border2)">
+        <span style="margin-right:10px">${sevLabels[r.severity]||r.severity}</span>
+        <span class="fw-tag">${grpCount} control${grpCount===1?'':'s'}</span>
+        ${failCount>0?`<span class="fw-tag" style="background:var(--red-lt);border-color:var(--red);color:var(--red);margin-left:4px">${failCount} fail${failCount===1?'':'s'}</span>`:''}
+      </td>`;
+      tbody.appendChild(htr);
+    }
+    const sid='cd'+i;
+    const sevHtml=`<span class="sev sev-${r.severity}">${r.severity}</span>`;
+    const statHtml=statusHtml(r.status);
+    const fwHtml=Object.entries(r.frameworks)
+      .filter(([k])=>['CIS','NIST','ISO'].includes(k))
+      .map(([k,v])=>`<span class="fw-tag">${esc(v)}</span>`).join(' ');
+    const mitre=r.frameworks.MITRE||'';
+
+    // Summary row
+    const tr=document.createElement('tr');
+    tr.className='comp-row expandable';
+    tr.innerHTML=`
+      <td>${statHtml}</td>
+      <td>${sevHtml}</td>
+      <td><strong style="font-size:12px">${esc(r.title)}</strong><div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(r.id)}</div></td>
+      <td><span class="fw-tag">${esc(r.frameworks.CIS||'—')}</span></td>
+      <td><span class="fw-tag">${esc(r.frameworks.NIST||'—')}</span></td>
+      <td><span class="fw-tag">${esc(r.frameworks.ISO||'—')}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${esc(mitre)}</td>
+      <td style="color:var(--text3);font-size:10px">▶</td>`;
+    tr.onclick=()=>toggleCompDetail(tr,sid,r);
+    tbody.appendChild(tr);
+
+    // Detail row
+    const dr=document.createElement('tr');
+    dr.className='comp-detail';dr.id=sid;
+    dr.innerHTML=`<td colspan="8"><div class="comp-detail-inner">
+      <div class="comp-det-sec"><div class="comp-det-lbl">Finding</div><div class="comp-det-val">${esc(r.detail||'—')}</div></div>
+      <div class="comp-det-sec"><div class="comp-det-lbl">Description</div><div class="comp-det-val">${esc(r.description)}</div></div>
+      <div class="comp-det-sec"><div class="comp-det-lbl">Remediation</div><div class="comp-det-val">${esc(r.remediation)}</div></div>
+      <div class="comp-det-sec"><div class="comp-det-lbl">Reference</div><div class="comp-det-val"><a href="${esc(r.learnMore)}" target="_blank" rel="noopener">Microsoft Docs ↗</a></div></div>
+    </div></td>`;
+    tbody.appendChild(dr);
+  });
+
+  document.getElementById('tbl-compliance').style.display='table';
+}
+
+function toggleCompDetail(tr,sid,r){
+  tr.classList.toggle('open');
+  const dr=document.getElementById(sid);
+  if(!dr)return;
+  dr.style.display=dr.style.display==='table-row'?'none':'table-row';
+  const arrow=tr.querySelector('td:last-child');
+  if(arrow)arrow.textContent=dr.style.display==='table-row'?'▼':'▶';
+}
+
+function statusHtml(s){
+  const map={
+    pass:`<span class="stat-pass"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/></svg>Pass</span>`,
+    fail:`<span class="stat-fail"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M4.646 4.646a.5.5 0 01.708 0L8 7.293l2.646-2.647a.5.5 0 01.708.708L8.707 8l2.647 2.646a.5.5 0 01-.708.708L8 8.707l-2.646 2.647a.5.5 0 01-.708-.708L7.293 8 4.646 5.354a.5.5 0 010-.708z"/></svg>Fail</span>`,
+    warn:`<span class="stat-warn"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8.982 1.566a1.13 1.13 0 00-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 01-1.1 0L7.1 5.995A.905.905 0 018 5zm.002 6a1 1 0 110 2 1 1 0 010-2z"/></svg>Review</span>`,
+    info:`<span class="stat-info"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a1 1 0 110 2 1 1 0 010-2zm0 3a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/></svg>Info</span>`,
+    na:`<span class="stat-na">N/A</span>`,
+  };
+  return map[s]||map.info;
+}
+
+// ── COMPLIANCE SCORE KPIs ───────────────────────────────────────────────
+function updateComplianceScores(){
+  function score(results,fw){
+    const relevant=fw==='all'?results:results.filter(r=>r.frameworks[fw]);
+    if(!relevant.length)return{pct:0,pass:0,total:0};
+    const pass=relevant.filter(r=>r.status==='pass').length;
+    const total=relevant.filter(r=>r.status!=='info'&&r.status!=='na').length||1;
+    return{pct:Math.round(pass/total*100),pass,total};
+  }
+  const all=score(COMP_RESULTS,'all');
+  const cis=score(COMP_RESULTS,'CIS');
+  const nist=score(COMP_RESULTS,'NIST');
+  const iso=score(COMP_RESULTS,'ISO');
+  const critFail=COMP_RESULTS.filter(r=>r.status==='fail'&&r.severity==='critical').length;
+
+  const color=pct=>pct>=70?'var(--green)':pct>=50?'var(--orange)':'var(--red)';
+
+  document.getElementById('comp-pct-all').textContent=all.pct+'%';
+  document.getElementById('comp-pct-all').style.color=color(all.pct);
+  document.getElementById('comp-sub-all').textContent=all.pass+' / '+all.total+' controls passed';
+
+  document.getElementById('comp-pct-cis').textContent=cis.pct+'%';
+  document.getElementById('comp-pct-cis').style.color=color(cis.pct);
+  document.getElementById('comp-sub-cis').textContent=cis.pass+' / '+cis.total+' passed';
+
+  document.getElementById('comp-pct-nist').textContent=nist.pct+'%';
+  document.getElementById('comp-pct-nist').style.color=color(nist.pct);
+  document.getElementById('comp-sub-nist').textContent=nist.pass+' / '+nist.total+' passed';
+
+  document.getElementById('comp-pct-iso').textContent=iso.pct+'%';
+  document.getElementById('comp-pct-iso').style.color=color(iso.pct);
+  document.getElementById('comp-sub-iso').textContent=iso.pass+' / '+iso.total+' passed';
+
+  document.getElementById('comp-fail-crit').textContent=critFail;
+  document.getElementById('comp-fail-crit').style.color=critFail>0?'var(--red)':'var(--green)';
+  document.getElementById('comp-sub-crit').textContent=critFail===0?'All critical passed':'Immediate action needed';
+}
+
+// ── FILTER FUNCTIONS ────────────────────────────────────────────────────
+function setFramework(fw,btn){
+  COMP_FILTER_FW=fw;
+  btn.closest('div').querySelectorAll('.cfw-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCompliance();
+}
+function setSeverity(sev,btn){
+  COMP_FILTER_SEV=sev;
+  btn.closest('div').querySelectorAll('.cfw-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCompliance();
+}
+function setStatus(stat,btn){
+  COMP_FILTER_STAT=stat;
+  btn.closest('div').querySelectorAll('.cfw-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCompliance();
+}
+
+// ── CSV EXPORT ──────────────────────────────────────────────────────────
+function exportCSV(){
+  const headers=['ID','Title','Status','Severity','Finding','CIS M365','NIST 800-53','ISO 27001','MITRE ATT&CK','Remediation'];
+  const sevOrder={critical:0,high:1,medium:2,low:3};
+  const statOrder={fail:0,warn:1,info:2,na:3,pass:4};
+  const sorted=[...COMP_RESULTS].sort((a,b)=>(sevOrder[a.severity]??9)-(sevOrder[b.severity]??9)||(statOrder[a.status]??5)-(statOrder[b.status]??5));
+  const rows=sorted.map(r=>[
+    r.id,r.title,r.status.toUpperCase(),r.severity.toUpperCase(),
+    (r.detail||'').replace(/,/g,';'),
+    r.frameworks.CIS||'',r.frameworks.NIST||'',r.frameworks.ISO||'',
+    (r.frameworks.MITRE||'').replace(/,/g,';'),
+    (r.remediation||'').replace(/,/g,';')
+  ]);
+  const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='entravault-compliance-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ── HTML REPORT EXPORT ─────────────────────────────────────────────────
+function exportHTMLReport(){
+  const sevOrder={critical:0,high:1,medium:2,low:3};
+  const statOrder={fail:0,warn:1,info:2,na:3,pass:4};
+  const sorted=[...COMP_RESULTS].sort((a,b)=>(sevOrder[a.severity]??9)-(sevOrder[b.severity]??9)||(statOrder[a.status]??5)-(statOrder[b.status]??5));
+  const pass=sorted.filter(r=>r.status==='pass').length;
+  const fail=sorted.filter(r=>r.status==='fail').length;
+  const warn=sorted.filter(r=>r.status==='warn').length;
+  const total=sorted.filter(r=>r.status!=='info'&&r.status!=='na').length||1;
+  const pct=Math.round(pass/total*100);
+  const date=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  const userName=document.getElementById('p-name')?.textContent||'Unknown';
+
+  const sevColors={critical:'#a4262c',high:'#ca5010',medium:'#7a3d00',low:'#605e5c'};
+  const statColors={pass:'#107c10',fail:'#a4262c',warn:'#7a3d00',info:'#0078d4',na:'#605e5c'};
+  const statLabels={pass:'PASS',fail:'FAIL',warn:'REVIEW',info:'INFO',na:'N/A'};
+
+  let lastSev=null;
+  const rows=sorted.map(r=>{
+    let groupHdr='';
+    if(r.severity!==lastSev){
+      lastSev=r.severity;
+      groupHdr=`<tr><td colspan="7" style="background:#f3f2f1;padding:8px 12px;font-size:11px;font-weight:700;color:#605e5c;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #d2d0ce">${r.severity.toUpperCase()}</td></tr>`;
+    }
+    return groupHdr+`<tr style="border-bottom:1px solid #edebe9">
+      <td style="padding:8px 12px;font-size:11px;font-weight:700;color:${statColors[r.status]||'#605e5c'}">${statLabels[r.status]||r.status}</td>
+      <td style="padding:8px 12px;font-size:11px;font-weight:700;color:${sevColors[r.severity]||'#605e5c'}">${r.severity.toUpperCase()}</td>
+      <td style="padding:8px 12px"><strong style="font-size:12px">${r.id} — ${esc(r.title)}</strong><div style="font-size:11px;color:#605e5c;margin-top:3px">${esc(r.detail||'')}</div></td>
+      <td style="padding:8px 12px;font-size:11px">${r.frameworks.CIS||'—'}</td>
+      <td style="padding:8px 12px;font-size:11px">${r.frameworks.NIST||'—'}</td>
+      <td style="padding:8px 12px;font-size:11px">${r.frameworks.ISO||'—'}</td>
+      <td style="padding:8px 12px;font-size:11px;color:#605e5c">${esc(r.remediation||'—')}</td>
+    </tr>`;
+  }).join('');
+
+  const scoreColor=pct>=70?'#107c10':pct>=50?'#ca5010':'#a4262c';
+
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
+<title>EntraVault Compliance Report — ${date}</title>
+<style>
+  body{font-family:'Segoe UI',system-ui,sans-serif;color:#201f1e;margin:0;padding:0;font-size:13px}
+  @media print{.no-print{display:none}@page{margin:1.5cm;size:A4 landscape}}
+</style></head><body>
+<div style="background:#0078d4;color:#fff;padding:32px 40px">
+  <div style="font-size:24px;font-weight:700;margin-bottom:4px">EntraVault — Compliance Report</div>
+  <div style="font-size:14px;opacity:.85">Generated ${date} · Signed in as ${esc(userName)}</div>
+</div>
+<div style="padding:24px 40px;background:#fff;border-bottom:1px solid #edebe9;display:flex;gap:32px">
+  <div style="text-align:center"><div style="font-size:36px;font-weight:700;color:${scoreColor}">${pct}%</div><div style="font-size:12px;color:#605e5c">Overall compliance</div></div>
+  <div style="text-align:center"><div style="font-size:36px;font-weight:700;color:#107c10">${pass}</div><div style="font-size:12px;color:#605e5c">Controls passed</div></div>
+  <div style="text-align:center"><div style="font-size:36px;font-weight:700;color:#a4262c">${fail}</div><div style="font-size:12px;color:#605e5c">Controls failed</div></div>
+  <div style="text-align:center"><div style="font-size:36px;font-weight:700;color:#7a3d00">${warn}</div><div style="font-size:12px;color:#605e5c">Need review</div></div>
+  <div style="text-align:center"><div style="font-size:36px;font-weight:700;color:#605e5c">${total}</div><div style="font-size:12px;color:#605e5c">Total evaluated</div></div>
+</div>
+<div style="padding:24px 40px">
+  <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="background:#f3f2f1;border-bottom:2px solid #d2d0ce">
+      <th style="padding:8px 12px;text-align:left;width:60px">Status</th>
+      <th style="padding:8px 12px;text-align:left;width:70px">Severity</th>
+      <th style="padding:8px 12px;text-align:left">Control / Finding</th>
+      <th style="padding:8px 12px;text-align:left;width:80px">CIS</th>
+      <th style="padding:8px 12px;text-align:left;width:90px">NIST</th>
+      <th style="padding:8px 12px;text-align:left;width:80px">ISO 27001</th>
+      <th style="padding:8px 12px;text-align:left">Remediation</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</div>
+<div style="padding:16px 40px;background:#f3f2f1;font-size:11px;color:#a19f9d;border-top:1px solid #edebe9">
+  Generated by EntraVault · Read-only assessment against Microsoft Graph API · ${date}
+</div>
+</body></html>`;
+
+  const a=document.createElement('a');
+  a.href='data:text/html;charset=utf-8,'+encodeURIComponent(html);
+  a.download='entravault-report-'+new Date().toISOString().slice(0,10)+'.html';
+  a.click();
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')signIn()});
+</script>
+</body>
+</html>
