@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EntraVault — Security Dashboard</title>
+<style>
+:root{
+  --bg:#f3f2f1;--surface:#fff;--surface2:#faf9f8;--border:#edebe9;--border2:#d2d0ce;
+  --text:#201f1e;--text2:#605e5c;--text3:#a19f9d;
+  --blue:#0078d4;--blue-lt:#eff6fc;--blue-mid:#c7e0f4;
+  --purple:#8764b8;--purple-lt:#f4f0fb;
+  --green:#107c10;--green-lt:#dff6dd;
+  --red:#a4262c;--red-lt:#fde7e9;
+  --amber-lt:#fff4ce;--amber-text:#7a3d00;
+  --teal:#038387;--teal-lt:#e6f4f4;
+  --orange:#ca5010;--orange-lt:#fdf0e8;
+  --shadow:rgba(0,0,0,0.07);--shadow2:rgba(0,0,0,0.13);
+  --r:4px;--rl:8px;--font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+
+/* TOPBAR */
+.topbar{height:48px;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:200;box-shadow:0 1px 3px var(--shadow)}
+.tb-brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--text);text-decoration:none}
+.tb-brand svg{width:20px;height:20px}
+.tb-sep{width:1px;height:20px;background:var(--border2);margin:0 4px}
+.tb-title{font-size:13px;color:var(--text2)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.persona{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+.p-av{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* LOGIN */
+#login-screen{min-height:calc(100vh - 48px);display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.login-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 2px 8px var(--shadow),0 8px 32px var(--shadow);padding:40px;width:100%;max-width:440px}
+.login-hdr{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.login-ico{width:40px;height:40px;border-radius:var(--rl);background:var(--blue-lt);display:flex;align-items:center;justify-content:center}
+.login-ico svg{width:24px;height:24px}
+.login-hdr h1{font-size:20px;font-weight:600}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.6}
+.fl-field{margin-bottom:16px}
+.fl-field label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.fl-field input{width:100%;height:32px;border:1px solid var(--border2);border-radius:var(--r);padding:0 8px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .1s,box-shadow .1s}
+.fl-field input:hover{border-color:var(--text3)}
+.fl-field input:focus{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.fl-field input::placeholder{color:var(--text3)}
+.fl-field .hint{font-size:11px;color:var(--text3);margin-top:3px}
+.fl-btn{width:100%;height:32px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .1s;margin-top:8px}
+.fl-btn:hover{background:#106ebe}
+.fl-btn:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed}
+.ms-sq{display:flex;flex-wrap:wrap;width:16px;height:16px;gap:1px;flex-shrink:0}
+.ms-sq span{width:7px;height:7px}
+.msgbar{display:flex;gap:8px;align-items:flex-start;border-radius:var(--r);padding:10px 12px;font-size:13px;margin-top:16px;line-height:1.5}
+.msgbar.info{background:var(--blue-lt);color:#004578;border-left:3px solid var(--blue)}
+.msgbar.error{background:var(--red-lt);color:var(--red);border-left:3px solid var(--red);display:none}
+.msgbar svg{flex-shrink:0;margin-top:1px;width:16px;height:16px}
+
+/* DASHBOARD */
+#dashboard{display:none}
+
+/* COMMAND BAR */
+.cmdbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:4px;height:44px}
+.cmd{display:flex;align-items:center;gap:6px;padding:0 10px;height:32px;border-radius:var(--r);border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text);cursor:pointer;transition:background .1s;white-space:nowrap}
+.cmd:hover{background:var(--bg)}
+.cmd svg{width:16px;height:16px;flex-shrink:0}
+.cmd.danger:hover{background:var(--red-lt);color:var(--red)}
+.cmd-sep{width:1px;height:24px;background:var(--border2);margin:0 4px}
+.rtime{margin-left:auto;font-size:12px;color:var(--text3)}
+
+/* TABS */
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;overflow-x:auto;position:sticky;top:48px;z-index:100}
+.tab{display:flex;align-items:center;gap:6px;padding:0 16px;height:44px;border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .1s,border-color .1s;flex-shrink:0}
+.tab:hover{color:var(--text);background:var(--bg)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tab svg{width:15px;height:15px;flex-shrink:0}
+.tab-count{background:var(--bg);border:1px solid var(--border2);border-radius:10px;font-size:10px;font-weight:600;padding:1px 6px;color:var(--text2);min-width:20px;text-align:center}
+.tab.active .tab-count{background:var(--blue-lt);border-color:var(--blue-mid);color:var(--blue)}
+
+/* TAB CONTENT */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* OVERVIEW TAB */
+.overview{padding:20px;max-width:1600px;margin:0 auto}
+
+/* SCORE CARD */
+.score-section{display:grid;grid-template-columns:280px 1fr;gap:16px;margin-bottom:20px}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 1px 2px var(--shadow);padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.score-ring{position:relative;width:120px;height:120px}
+.score-ring svg{width:120px;height:120px;transform:rotate(-90deg)}
+.score-ring-track{fill:none;stroke:var(--border2);stroke-width:10}
+.score-ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-size:28px;font-weight:700;line-height:1;letter-spacing:-1px}
+.score-denom{font-size:12px;color:var(--text3)}
+.score-label{font-size:13px;font-weight:600;color:var(--text2)}
+.score-sub{font-size:11px;color:var(--text3)}
+
+.recs-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 1px 2px var(--shadow);overflow:hidden}
+.recs-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.recs-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.recs-title svg{width:15px;height:15px;color:var(--blue)}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px var(--shadow);transition:box-shadow .15s}
+.kpi:hover{box-shadow:0 2px 8px var(--shadow2)}
+.kpi-ic{width:36px;height:36px;border-radius:var(--rl);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-ic svg{width:18px;height:18px}
+.kpi-ic.blue  {background:var(--blue-lt);  color:var(--blue)}
+.kpi-ic.purple{background:var(--purple-lt);color:var(--purple)}
+.kpi-ic.green {background:var(--green-lt); color:var(--green)}
+.kpi-ic.red   {background:var(--red-lt);   color:var(--red)}
+.kpi-ic.teal  {background:var(--teal-lt);  color:var(--teal)}
+.kpi-ic.orange{background:var(--orange-lt);color:var(--orange)}
+.kpi-val{font-size:24px;font-weight:700;line-height:1;letter-spacing:-.5px}
+.kpi-lbl{font-size:11px;color:var(--text2);margin-top:2px}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 1px 2px var(--shadow);overflow:hidden}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.card-title svg{width:15px;height:15px;color:var(--blue);flex-shrink:0}
+.card-body{padding:0}
+
+/* SECTION TAB LAYOUT */
+.sec-page{padding:20px;max-width:1600px;margin:0 auto}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.full-col{grid-column:1/-1}
+
+/* BADGE */
+.bdg{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.bdg.blue  {background:var(--blue-lt);  color:var(--blue)}
+.bdg.green {background:var(--green-lt); color:var(--green)}
+.bdg.red   {background:var(--red-lt);   color:var(--red)}
+.bdg.amber {background:var(--amber-lt); color:var(--amber-text)}
+.bdg.purple{background:var(--purple-lt);color:var(--purple)}
+.bdg.teal  {background:var(--teal-lt);  color:var(--teal)}
+.bdg.orange{background:var(--orange-lt);color:var(--orange)}
+.bdg.neutral{background:var(--bg);color:var(--text2)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:11px;font-weight:600;color:var(--text2);padding:8px 18px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+.tbl td{padding:9px 18px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg)}
+.tbl td.mono{font-family:monospace;font-size:11px;color:var(--text2)}
+.cell-name{font-weight:600;color:var(--text)}
+.cell-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* EXPANDABLE CA */
+.ca-row{cursor:pointer}
+.ca-row:hover td{background:var(--blue-lt)}
+.ca-row.open td{background:var(--blue-lt)}
+.ca-det{display:none;background:var(--surface2)}
+.ca-det td{padding:0!important}
+.ca-det-inner{padding:14px 18px 16px 36px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ca-group{display:flex;flex-direction:column;gap:4px}
+.ca-group-lbl{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.ca-chips{display:flex;flex-wrap:wrap;gap:3px}
+.ca-chip{display:inline-flex;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:1px 6px;font-size:11px;color:var(--text)}
+.exp{display:inline-block;transition:transform .2s;margin-right:6px;font-size:10px;color:var(--text3)}
+.ca-row.open .exp{transform:rotate(90deg)}
+
+/* METHOD GRID */
+.mth-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--border)}
+.mth-cell{background:var(--surface);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.mth-cell:hover{background:var(--bg)}
+.mth-name{font-weight:500}
+.mth-st{display:flex;align-items:center;gap:5px;font-size:11px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot.on{background:var(--green)}
+.dot.off{background:var(--border2)}
+
+/* SECURE SCORE RECS */
+.rec-item{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer;transition:background .1s}
+.rec-item:last-child{border-bottom:none}
+.rec-item:hover{background:var(--bg)}
+.rec-bar-wrap{width:60px;height:6px;background:var(--border2);border-radius:3px;flex-shrink:0}
+.rec-bar{height:6px;border-radius:3px;transition:width .5s}
+.rec-pts{font-size:11px;color:var(--text3);white-space:nowrap;width:60px;text-align:right;flex-shrink:0}
+.rec-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-cat{flex-shrink:0}
+
+/* STATES */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--text3);font-size:13px}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{display:flex;flex-direction:column;align-items:center;padding:40px;gap:8px;color:var(--text3);font-size:13px;text-align:center}
+.perm-bar{margin:14px 18px;background:var(--amber-lt);border-left:3px solid #d4a010;border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--amber-text);line-height:1.6}
+
+/* SEARCH */
+.search-wrap{padding:10px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.search-inp{width:100%;max-width:320px;height:28px;border:1px solid var(--border2);border-radius:var(--r);padding:0 8px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--surface);outline:none}
+.search-inp:focus{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+
+@media(max-width:1100px){.two-col{grid-template-columns:1fr}.score-section{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(3,1fr)}.ov-grid3{grid-template-columns:1fr!important}}
+@media(max-width:900px){.ov-grid3{grid-template-columns:1fr!important}}
+@media(max-width:600px){.kpi-row{grid-template-columns:1fr 1fr}.ca-det-inner{grid-template-columns:1fr 1fr}}
+
+/* Event feed items */
+.ev-item{display:flex;align-items:flex-start;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;transition:background .1s}
+.ev-item:last-child{border-bottom:none}
+.ev-item:hover{background:var(--bg)}
+.ev-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ev-icon svg{width:13px;height:13px}
+.ev-icon.consent  {background:var(--red-lt);    color:var(--red)}
+.ev-icon.app      {background:var(--orange-lt);  color:var(--orange)}
+.ev-icon.role     {background:var(--purple-lt);  color:var(--purple)}
+.ev-icon.guest    {background:var(--amber-lt);   color:var(--amber-text)}
+.ev-icon.policy   {background:var(--blue-lt);    color:var(--blue)}
+.ev-icon.other    {background:var(--bg);         color:var(--text3)}
+.ev-body{flex:1;min-width:0}
+.ev-title{font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-detail{font-size:11px;color:var(--text3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-right{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.ev-time{font-size:10px;color:var(--text3);white-space:nowrap}
+
+/* Best practice check rows */
+.bp-item{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px}
+.bp-item:last-child{border-bottom:none}
+.bp-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bp-icon svg{width:11px;height:11px}
+.bp-icon.pass{background:var(--green-lt);color:var(--green)}
+.bp-icon.fail{background:var(--red-lt);  color:var(--red)}
+.bp-icon.warn{background:var(--amber-lt);color:var(--amber-text)}
+.bp-icon.info{background:var(--blue-lt); color:var(--blue)}
+.bp-icon.load{background:var(--bg);      color:var(--text3)}
+.bp-text{flex:1;min-width:0}
+.bp-name{font-weight:600;color:var(--text)}
+.bp-desc{font-size:11px;color:var(--text3);margin-top:1px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="tb-brand" href="#">
+    <svg viewBox="0 0 20 20" fill="none"><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" fill="#0078d4" opacity=".15"/><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" stroke="#0078d4" stroke-width="1.2"/><circle cx="10" cy="10" r="3" fill="#0078d4"/></svg>
+    EntraVault
+  </a>
+  <div class="tb-sep"></div>
+  <span class="tb-title">Security Dashboard</span>
+  <div class="tb-right" id="tb-right" style="display:none">
+    <div class="persona">
+      <div class="p-av" id="p-av">?</div>
+      <span id="p-name" style="font-size:13px"></span>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-panel" style="max-width:520px">
+
+    <!-- Logo + brand -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+      <div style="width:52px;height:52px;border-radius:12px;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="28" height="28" viewBox="0 0 20 20" fill="none"><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" fill="#0078d4" opacity=".15"/><path d="M10 2L3 5.5V14.5L10 18L17 14.5V5.5L10 2Z" stroke="#0078d4" stroke-width="1.4"/><circle cx="10" cy="10" r="3" fill="#0078d4"/></svg>
+      </div>
+      <div>
+        <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;color:var(--text)">EntraVault</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:1px">Microsoft Entra ID Security Dashboard</div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px">
+      EntraVault gives you a live, read-only view of your Microsoft Entra ID tenant's security posture — all in one place, with no installation required.
+    </p>
+
+    <!-- Feature pills -->
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-lt);color:var(--blue);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/></svg>
+        Conditional Access
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--purple-lt);color:var(--purple);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M14 6a4 4 0 01-4.899 3.899l-1.955 1.955a.5.5 0 01-.353.146H5v1.5a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-2.293a.5.5 0 01.146-.353l3.955-3.955A4 4 0 1114 6z" clip-rule="evenodd"/></svg>
+        MFA &amp; Auth Methods
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--green-lt);color:var(--green);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/></svg>
+        Best Practice Checks
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--orange-lt);color:var(--orange);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+        Secure Score
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--teal-lt);color:var(--teal);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+        Users, Devices &amp; Guests
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg);color:var(--text2);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/></svg>
+        Admin Roles
+      </span>
+    </div>
+
+    <!-- Divider -->
+    <div style="border-top:1px solid var(--border);margin-bottom:24px"></div>
+
+    <!-- Sign-in button -->
+    <button class="fl-btn" id="btn-si" onclick="signIn()" style="height:40px;font-size:15px">
+      <div class="ms-sq"><span style="background:#f25022"></span><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span></div>
+      Sign in with Microsoft
+    </button>
+
+    <!-- Trust note -->
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:12px;color:var(--text3);line-height:1.5">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0;margin-top:1px"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z" clip-rule="evenodd"/></svg>
+      <span>Read-only access. Signs in via Microsoft's secure OAuth2 PKCE flow. No passwords or secrets are stored. Your data never leaves your browser.</span>
+    </div>
+
+    <div class="msgbar error" id="lerr" style="margin-top:14px">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 5h2v5H7V5zm0 6h2v2H7v-2z"/></svg>
+      <span id="lerr-t"></span>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <!-- COMMAND BAR -->
+  <div class="cmdbar">
+    <button class="cmd" onclick="loadAll()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 8A5.5 5.5 0 112.635 5.4L1.28 4.047A7 7 0 1014.98 9H13.5V8z"/></svg>Refresh</button>
+    <div class="cmd-sep"></div>
+    <button class="cmd danger" onclick="signOut()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.5 1A.5.5 0 018 1.5v6a.5.5 0 01-1 0v-6A.5.5 0 017.5 1zm3.15 2.265a.5.5 0 01.707.708A4.5 4.5 0 115.5 8a4.5 4.5 0 01-4.5 4.5.5.5 0 010-1A3.5 3.5 0 1011.5 8a3.5 3.5 0 00-.643-2.027.5.5 0 01.793-.708z"/></svg>Sign out</button>
+    <span class="rtime" id="rtime"></span>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('overview',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM2 8a6 6 0 1112 0A6 6 0 012 8z"/><path d="M8 4a.75.75 0 01.75.75v3.5l2 1a.75.75 0 11-.75 1.3l-2.25-1.125A.75.75 0 017.25 8.75v-4A.75.75 0 018 4z"/></svg>Overview</button>
+    <button class="tab" onclick="switchTab('ca',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/></svg>Conditional Access<span class="tab-count" id="tc-ca">…</span></button>
+    <button class="tab" onclick="switchTab('mfa',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M14 6a4 4 0 01-4.899 3.899l-1.955 1.955a.5.5 0 01-.353.146H5v1.5a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-2.293a.5.5 0 01.146-.353l3.955-3.955A4 4 0 1114 6zm-4-2a.75.75 0 000 1.5.5.5 0 01.5.5.75.75 0 001.5 0 2 2 0 00-2-2z" clip-rule="evenodd"/></svg>Auth Methods<span class="tab-count" id="tc-mfa">…</span></button>
+    <button class="tab" onclick="switchTab('users',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm2-3a2 2 0 11-4 0 2 2 0 014 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>Users<span class="tab-count" id="tc-users">…</span></button>
+    <button class="tab" onclick="switchTab('devices',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M.5 3.5A.5.5 0 011 3h13a.5.5 0 010 1H14v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4H1a.5.5 0 01-.5-.5zM3 4v6h10V4H3z"/><path d="M5 14a.5.5 0 010-1h6a.5.5 0 010 1H5zm-1.5-2a.5.5 0 010-1h9a.5.5 0 010 1h-9z"/></svg>Devices<span class="tab-count" id="tc-devices">…</span></button>
+    <button class="tab" onclick="switchTab('apps',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.5A1.5 1.5 0 011.5 0h13A1.5 1.5 0 0116 1.5v13a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 010 14.5v-13zM1.5 1a.5.5 0 00-.5.5V5h14V1.5a.5.5 0 00-.5-.5h-13zM1 6v8.5a.5.5 0 00.5.5H6V6H1zm7 0v9h6.5a.5.5 0 00.5-.5V6H8zm-1 9V6H6v9h1z"/></svg>Applications<span class="tab-count" id="tc-apps">…</span></button>
+    <button class="tab" onclick="switchTab('groups',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 100-6 3 3 0 000 6zm-5.784 6A2.238 2.238 0 015 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 005 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>Groups<span class="tab-count" id="tc-groups">…</span></button>
+    <button class="tab" onclick="switchTab('admins',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z" clip-rule="evenodd"/></svg>Admin Roles<span class="tab-count" id="tc-admins">…</span></button>
+    <button class="tab" onclick="switchTab('guests',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 11-6 0 3 3 0 016 0zM8 7a2 2 0 100-4 2 2 0 000 4zm-5.5 8a.5.5 0 01-.5-.5A4 4 0 018 10.5a4 4 0 016 3.5.5.5 0 01-.5.5h-11zm10-4a1 1 0 100-2 1 1 0 000 2zm2 3.5a.5.5 0 00-.5-.5 2.5 2.5 0 00-2.5 2.5h2.5a.5.5 0 00.5-.5v-1.5z"/></svg>Guests<span class="tab-count" id="tc-guests">…</span></button>
+    <button class="tab" onclick="switchTab('score',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 012-2h8a2 2 0 012 2v13.5a.5.5 0 01-.777.416L8 13.101l-5.223 2.815A.5.5 0 012 15.5V2zm2-1a1 1 0 00-1 1v12.566l4.723-2.482a.5.5 0 01.554 0L13 14.566V2a1 1 0 00-1-1H4z"/><path d="M8 4a.5.5 0 01.5.5v1h1a.5.5 0 010 1h-1v1a.5.5 0 01-1 0v-1h-1a.5.5 0 010-1h1v-1A.5.5 0 018 4z"/></svg>Secure Score<span class="tab-count" id="tc-score">…</span></button>
+  </div>
+
+  <!-- ── OVERVIEW TAB ── -->
+  <div id="tab-overview" class="tab-content active">
+    <div class="overview">
+
+      <!-- GREETING BANNER -->
+      <div id="ov-greeting" style="display:none;margin-bottom:20px">
+        <div style="background:linear-gradient(135deg,#0078d4 0%,#106ebe 60%,#0064b4 100%);border-radius:var(--rl);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 2px 8px rgba(0,120,212,0.25)">
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.3px" id="ov-hello">Hello!</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.8);margin-top:3px" id="ov-sub">Loading your tenant security summary…</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <!-- Secure Score pill -->
+            <div style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:var(--rl);padding:12px 20px;text-align:center;min-width:120px">
+              <div style="font-size:11px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Secure Score</div>
+              <div style="font-size:28px;font-weight:700;color:#fff;line-height:1;letter-spacing:-1px" id="ov-score-pct">—</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:3px" id="ov-score-pts">loading…</div>
+              <!-- Progress bar -->
+              <div style="background:rgba(255,255,255,0.2);border-radius:3px;height:4px;margin-top:8px;overflow:hidden">
+                <div id="ov-score-bar" style="height:4px;border-radius:3px;background:#fff;width:0%;transition:width .8s ease"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-ic blue"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-ca">—</div><div class="kpi-lbl">CA Policies</div><div class="kpi-sub" id="ks-ca">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic purple"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-mfa">—</div><div class="kpi-lbl">Auth Methods On</div><div class="kpi-sub" id="ks-mfa">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic teal"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-users">—</div><div class="kpi-lbl">Total Users</div><div class="kpi-sub" id="ks-users">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic green"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg></div><div><div class="kpi-val" id="kv-admins">—</div><div class="kpi-lbl">Admin Members</div><div class="kpi-sub" id="ks-admins">loading…</div></div></div>
+        <div class="kpi"><div class="kpi-ic orange"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg></div><div><div class="kpi-val" id="kv-score">—</div><div class="kpi-lbl">Secure Score</div><div class="kpi-sub" id="ks-score">loading…</div></div></div>
+      </div>
+
+      <!-- THREE COLUMN GRID -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px" class="ov-grid3">
+
+        <!-- Security Events Feed -->
+        <div class="card" style="grid-column:1/3">
+          <div class="card-hdr">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="currentColor" style="color:var(--red)"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z" clip-rule="evenodd"/></svg>
+              High-Severity Security Events
+              <span style="font-size:11px;font-weight:400;color:var(--text3)">— app consents, new apps, role changes, guest invites</span>
+            </div>
+            <span class="bdg red" id="bdg-events">…</span>
+          </div>
+          <div class="card-body">
+            <div class="loading" id="ld-events"><div class="spinner"></div>Loading security events…</div>
+            <div id="list-events" style="display:none"></div>
+            <div class="empty" id="emp-events" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px;color:var(--border2)"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              No high-severity events found — or AuditLog.Read.All permission not granted
+            </div>
+            <div id="err-events" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Best Practice Checks -->
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="currentColor" style="color:var(--green)"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/></svg>
+              Best Practice Checks
+            </div>
+            <span class="bdg green" id="bdg-bp">checking…</span>
+          </div>
+          <div class="card-body">
+            <div class="loading" id="ld-bp"><div class="spinner"></div>Running checks…</div>
+            <div id="list-bp" style="display:none"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM ROW -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/></svg>Admin Role Members</div><span class="bdg green" id="bdg-admins-ov">…</span></div>
+          <div class="card-body"><div class="loading" id="ld-admins-ov"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-admins-ov" style="display:none"><thead><tr><th>User</th><th>Role</th><th>Type</th></tr></thead><tbody id="body-admins-ov"></tbody></table><div id="err-admins-ov" style="display:none"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 11-6 0 3 3 0 016 0zM8 7a2 2 0 100-4 2 2 0 000 4zm-5.5 8a.5.5 0 01-.5-.5A4 4 0 018 10.5a4 4 0 016 3.5.5.5 0 01-.5.5h-11zm10-4a1 1 0 100-2 1 1 0 000 2zm2 3.5a.5.5 0 00-.5-.5 2.5 2.5 0 00-2.5 2.5h2.5a.5.5 0 00.5-.5v-1.5z"/></svg>Guest Users</div><span class="bdg red" id="bdg-guests-ov">…</span></div>
+          <div class="card-body"><div class="loading" id="ld-guests-ov"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-guests-ov" style="display:none"><thead><tr><th>Name</th><th>Email</th><th>State</th></tr></thead><tbody id="body-guests-ov"></tbody></table><div id="err-guests-ov" style="display:none"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── CA TAB ── -->
+  <div id="tab-ca" class="tab-content">
+    <div class="sec-page">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/></svg>Conditional Access Policies <span style="font-size:11px;font-weight:400;color:var(--text3)">— click row to expand</span></div><span class="bdg blue" id="bdg-ca">…</span></div>
+        <div class="card-body"><div class="loading" id="ld-ca"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-ca" style="display:none"><thead><tr><th></th><th>Policy Name</th><th>State</th><th>Users</th><th>Apps</th><th>Platforms</th><th>Grant Controls</th></tr></thead><tbody id="body-ca"></tbody></table><div class="empty" id="emp-ca" style="display:none">No policies found</div><div id="err-ca" style="display:none"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MFA TAB ── -->
+  <div id="tab-mfa" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M14 6a4 4 0 01-4.899 3.899l-1.955 1.955a.5.5 0 01-.353.146H5v1.5a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-2.293a.5.5 0 01.146-.353l3.955-3.955A4 4 0 1114 6zm-4-2a.75.75 0 000 1.5.5.5 0 01.5.5.75.75 0 001.5 0 2 2 0 00-2-2z" clip-rule="evenodd"/></svg>Authentication Methods Policy</div><span class="bdg purple" id="bdg-mfa">…</span></div><div class="card-body"><div class="loading" id="ld-mfa"><div class="spinner"></div>Loading…</div><div class="mth-grid" id="grid-mfa" style="display:none"></div><div class="empty" id="emp-mfa" style="display:none">No data</div><div id="err-mfa" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── USERS TAB ── -->
+  <div id="tab-users" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm2-3a2 2 0 11-4 0 2 2 0 014 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>All Users</div><span class="bdg teal" id="bdg-users">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-users" placeholder="Search by name or UPN…" oninput="filterTable('body-users',this.value)"/></div><div class="card-body"><div class="loading" id="ld-users"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-users" style="display:none"><thead><tr><th>Name</th><th>UPN</th><th>Type</th><th>Account</th><th>Created</th></tr></thead><tbody id="body-users"></tbody></table><div class="empty" id="emp-users" style="display:none">No users found</div><div id="err-users" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── DEVICES TAB ── -->
+  <div id="tab-devices" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M.5 3.5A.5.5 0 011 3h13a.5.5 0 010 1H14v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4H1a.5.5 0 01-.5-.5z"/><path d="M5 14a.5.5 0 010-1h6a.5.5 0 010 1H5z"/></svg>Registered Devices</div><span class="bdg blue" id="bdg-devices">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-devices" placeholder="Search by device name or OS…" oninput="filterTable('body-devices',this.value)"/></div><div class="card-body"><div class="loading" id="ld-devices"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-devices" style="display:none"><thead><tr><th>Device Name</th><th>OS</th><th>Join Type</th><th>Compliant</th><th>Last Seen</th></tr></thead><tbody id="body-devices"></tbody></table><div class="empty" id="emp-devices" style="display:none">No devices found</div><div id="err-devices" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── APPS TAB ── -->
+  <div id="tab-apps" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.5A1.5 1.5 0 011.5 0h13A1.5 1.5 0 0116 1.5v13a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 010 14.5v-13z"/></svg>Enterprise Applications</div><span class="bdg orange" id="bdg-apps">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-apps" placeholder="Search by app name…" oninput="filterTable('body-apps',this.value)"/></div><div class="card-body"><div class="loading" id="ld-apps"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-apps" style="display:none"><thead><tr><th>Application</th><th>App ID</th><th>Publisher</th><th>Enabled</th></tr></thead><tbody id="body-apps"></tbody></table><div class="empty" id="emp-apps" style="display:none">No applications found</div><div id="err-apps" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── GROUPS TAB ── -->
+  <div id="tab-groups" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7z"/></svg>Groups</div><span class="bdg purple" id="bdg-groups">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-groups" placeholder="Search by group name…" oninput="filterTable('body-groups',this.value)"/></div><div class="card-body"><div class="loading" id="ld-groups"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-groups" style="display:none"><thead><tr><th>Group Name</th><th>Type</th><th>Members</th><th>Mail</th><th>Created</th></tr></thead><tbody id="body-groups"></tbody></table><div class="empty" id="emp-groups" style="display:none">No groups found</div><div id="err-groups" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── ADMINS TAB ── -->
+  <div id="tab-admins" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/></svg>Admin Role Members</div><span class="bdg green" id="bdg-admins">…</span></div><div class="card-body"><div class="loading" id="ld-admins"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-admins" style="display:none"><thead><tr><th>User</th><th>Role</th><th>Type</th></tr></thead><tbody id="body-admins"></tbody></table><div class="empty" id="emp-admins" style="display:none">No admin roles found</div><div id="err-admins" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── GUESTS TAB ── -->
+  <div id="tab-guests" class="tab-content">
+    <div class="sec-page"><div class="card"><div class="card-hdr"><div class="card-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Guest Users (B2B)</div><span class="bdg red" id="bdg-guests">…</span></div><div class="search-wrap"><input class="search-inp" id="srch-guests" placeholder="Search by name or email…" oninput="filterTable('body-guests',this.value)"/></div><div class="card-body"><div class="loading" id="ld-guests"><div class="spinner"></div>Loading…</div><table class="tbl" id="tbl-guests" style="display:none"><thead><tr><th>Name</th><th>Email / UPN</th><th>Invited</th><th>State</th></tr></thead><tbody id="body-guests"></tbody></table><div class="empty" id="emp-guests" style="display:none">No guest users found</div><div id="err-guests" style="display:none"></div></div></div></div>
+  </div>
+
+  <!-- ── SECURE SCORE TAB ── -->
+  <div id="tab-score" class="tab-content">
+    <div class="sec-page">
+      <div class="score-section">
+        <div class="score-card" id="score-card">
+          <div class="loading" id="ld-score-ring"><div class="spinner"></div>Loading…</div>
+          <div id="score-ring-wrap" style="display:none">
+            <div class="score-ring">
+              <svg viewBox="0 0 120 120"><circle class="score-ring-track" cx="60" cy="60" r="50"/><circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="50" stroke="#0078d4" stroke-dasharray="314" stroke-dashoffset="314"/></svg>
+              <div class="score-center"><div class="score-num" id="score-cur">—</div><div class="score-denom" id="score-max">/ —</div></div>
+            </div>
+            <div style="text-align:center;margin-top:8px"><div class="score-label">Secure Score</div><div class="score-sub" id="score-pct">—</div></div>
+          </div>
+        </div>
+        <div class="recs-card">
+          <div class="recs-hdr"><div class="recs-title"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 012-2h8a2 2 0 012 2v13.5a.5.5 0 01-.777.416L8 13.101l-5.223 2.815A.5.5 0 012 15.5V2z"/></svg>Improvement Actions</div><span class="bdg orange" id="bdg-score">…</span></div>
+          <div id="ld-score-recs" class="loading"><div class="spinner"></div>Loading…</div>
+          <div id="list-score" style="display:none"></div>
+          <div class="empty" id="emp-score" style="display:none">No recommendations found</div>
+          <div id="err-score" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+// ── PKCE ──────────────────────────────────────────────────────────────
+function b64url(b){return btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'')}
+async function sha256(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))}
+function rnd(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return b64url(a).substring(0,n)}
+
+const CLIENT_ID='db4eb7fe-3d30-4137-98cb-24f34672b1ef';
+const SCOPE='https://graph.microsoft.com/Policy.Read.All https://graph.microsoft.com/Directory.Read.All https://graph.microsoft.com/User.Read.All https://graph.microsoft.com/SecurityEvents.Read.All openid profile offline_access';
+
+let TOKEN=null,tokenExp=0;
+
+async function signIn(){
+  const ci=CLIENT_ID;
+  const ti='common';
+  hideErr();
+  const btn=document.getElementById('btn-si');
+  btn.disabled=true;btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;border-top-color:#fff"></div> Connecting…';
+  try{
+    const ru=window.location.href.split('?')[0].split('#')[0];
+    const v=rnd(64),ch=b64url(await sha256(v)),st=rnd(16);
+    sessionStorage.setItem('pv',v);sessionStorage.setItem('ps',st);
+    sessionStorage.setItem('pc',ci);sessionStorage.setItem('pt',ti);sessionStorage.setItem('pr',ru);
+    const url='https://login.microsoftonline.com/common/oauth2/v2.0/authorize?'
+      +'client_id='+encodeURIComponent(ci)
+      +'&response_type=code&redirect_uri='+encodeURIComponent(ru)
+      +'&scope='+encodeURIComponent(SCOPE)
+      +'&state='+encodeURIComponent(st)
+      +'&code_challenge='+encodeURIComponent(ch)
+      +'&code_challenge_method=S256&response_mode=query&prompt=select_account';
+    const w=480,h=640,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2);
+    const pop=window.open(url,'msauth','width='+w+',height='+h+',left='+l+',top='+t+',toolbar=no,menubar=no');
+    if(!pop){window.location.href=url;return}
+    await new Promise((res,rej)=>{
+      const tmr=setInterval(()=>{
+        try{
+          const pu=pop.location.href;
+          if(pu.startsWith(ru)){
+            clearInterval(tmr);
+            const p=new URLSearchParams(pop.location.search);pop.close();
+            const code=p.get('code'),rs=p.get('state'),err=p.get('error');
+            if(err){rej(new Error(p.get('error_description')||err));return}
+            if(rs!==st){rej(new Error('State mismatch.'));return}
+            if(!code){rej(new Error('No code returned.'));return}
+            exchCode(code,ci,ti,ru,v).then(res).catch(rej);
+          }
+        }catch(e){}
+        if(pop.closed){clearInterval(tmr);rej(new Error('Sign-in window was closed.'))}
+      },300);
+    });
+  }catch(e){showErr(e.message||String(e))}
+  finally{
+    btn.disabled=false;
+    btn.innerHTML='<div class="ms-sq"><span style="background:#f25022"></span><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span></div> Sign in with Microsoft';
+  }
+}
+
+async function exchCode(code,ci,ti,ru,v){
+  const body='client_id='+encodeURIComponent(ci)+'&grant_type=authorization_code&code='+encodeURIComponent(code)+'&redirect_uri='+encodeURIComponent(ru)+'&code_verifier='+encodeURIComponent(v)+'&scope='+encodeURIComponent(SCOPE);
+  const r=await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error_description||d.error||'Token exchange failed');
+  TOKEN=d.access_token;tokenExp=Date.now()+(d.expires_in-60)*1000;
+  if(d.refresh_token){sessionStorage.setItem('prf',d.refresh_token);sessionStorage.setItem('pc2',ci);sessionStorage.setItem('pt2',ti)}
+  if(d.id_token){try{const pl=JSON.parse(atob(d.id_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));const nm=pl.name||pl.preferred_username||'User';document.getElementById('p-av').textContent=nm.split(' ').map(s=>s[0]).join('').substring(0,2).toUpperCase();document.getElementById('p-name').textContent=nm;setGreeting(nm)}catch(e){}}  document.getElementById('login-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('tb-right').style.display='flex';
+  loadAll();
+}
+
+async function getToken(){
+  if(TOKEN&&Date.now()<tokenExp)return TOKEN;
+  const rf=sessionStorage.getItem('prf'),ci=sessionStorage.getItem('pc2'),ti=sessionStorage.getItem('pt2');
+  if(rf&&ci&&ti){
+    const body='client_id='+encodeURIComponent(ci)+'&grant_type=refresh_token&refresh_token='+encodeURIComponent(rf)+'&scope='+encodeURIComponent(SCOPE);
+    const r=await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const d=await r.json();
+    if(r.ok){TOKEN=d.access_token;tokenExp=Date.now()+(d.expires_in-60)*1000;if(d.refresh_token)sessionStorage.setItem('prf',d.refresh_token);return TOKEN}
+  }
+  throw new Error('Session expired. Please sign in again.');
+}
+
+async function signOut(){
+  TOKEN=null;tokenExp=0;
+  ['pv','ps','pc','pt','pr','prf','pc2','pt2'].forEach(k=>sessionStorage.removeItem(k));
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('tb-right').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+function showErr(m){document.getElementById('lerr-t').textContent=m;document.getElementById('lerr').style.display='flex'}
+function hideErr(){document.getElementById('lerr').style.display='none'}
+
+// ── TABS ──────────────────────────────────────────────────────────────
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── GRAPH ─────────────────────────────────────────────────────────────
+async function gFetch(path,beta){
+  const token=await getToken();
+  const base=beta?'https://graph.microsoft.com/beta':'https://graph.microsoft.com/v1.0';
+  const r=await fetch(base+path,{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'HTTP '+r.status)}
+  return r.json();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmtDate(s){if(!s)return'—';try{return new Date(s).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}catch(e){return s}}
+function show(id){const e=document.getElementById(id);if(e)e.style.display=''}
+function hide(id){const e=document.getElementById(id);if(e)e.style.display='none'}
+
+function permErr(key,bdg,kv,ks,perm,msg){
+  hide('ld-'+key);
+  const el=document.getElementById('err-'+key);
+  if(!el)return;
+  el.innerHTML='<div class="perm-bar">⚠ Access denied — required: <strong>'+esc(perm)+'</strong>'+(msg?'<br><small>'+esc(msg)+'</small>':'')+'</div>';
+  el.style.display='block';
+  const b=document.getElementById(bdg);if(b){b.textContent='No access';b.className='bdg red'}
+  const v=document.getElementById(kv);if(v)v.textContent='!';
+  const s=document.getElementById(ks);if(s)s.textContent='Permission error';
+}
+
+function setCount(tc,n){const e=document.getElementById(tc);if(e)e.textContent=n}
+
+function filterTable(tbodyId,q){
+  const rows=document.getElementById(tbodyId)?.querySelectorAll('tr')||[];
+  const lq=q.toLowerCase();
+  rows.forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(lq)?'':'none'});
+}
+
+// ── LOAD ALL ──────────────────────────────────────────────────────────
+async function loadAll(){
+  document.getElementById('rtime').textContent='Refreshing…';
+  // Reset all loaders
+  const keys=['ca','mfa','users','devices','apps','groups','admins','admins-ov','guests','guests-ov','score','events','bp'];
+  keys.forEach(k=>{
+    show('ld-'+k);
+    ['tbl-'+k,'grid-'+k,'list-'+k,'emp-'+k,'err-'+k,'score-ring-wrap'].forEach(hide);
+    const b=document.getElementById('body-'+k);if(b)b.innerHTML='';
+  });
+  // Reset BP data
+  BP_DATA.caPolicies=[];BP_DATA.mfaMethods=[];BP_DATA.users=[];BP_DATA.adminRows=[];BP_DATA.guests=[];BP_DATA.scorePct=null;
+  await Promise.allSettled([loadCA(),loadMFA(),loadUsers(),loadDevices(),loadApps(),loadGroups(),loadAdmins(),loadGuests(),loadScore(),loadSecurityEvents()]);
+  runBestPracticeChecks();
+  document.getElementById('rtime').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+// ── CONDITIONAL ACCESS ────────────────────────────────────────────────
+const APP_NAMES={'All':'All apps','None':'None','Office365':'Office 365','MicrosoftAdminPortals':'Admin Portals'};
+const PLAT_NAMES={'android':'Android','iOS':'iOS','windows':'Windows','macOS':'macOS','linux':'Linux','windowsPhone':'WinPhone','all':'All'};
+
+async function loadCA(){
+  try{
+    const data=await gFetch('/identity/conditionalAccess/policies');
+    const ps=data.value||[];
+    BP_DATA.caPolicies=ps;
+    const enabled=ps.filter(p=>p.state==='enabled').length;
+    document.getElementById('kv-ca').textContent=ps.length;
+    document.getElementById('ks-ca').textContent=enabled+' enabled';
+    document.getElementById('bdg-ca').textContent=ps.length+' policies';
+    setCount('tc-ca',ps.length);
+    if(!ps.length){show('emp-ca');return}
+    const sCls={'enabled':'bdg green','disabled':'bdg neutral','enabledForReportingButNotEnforced':'bdg amber'};
+    const sLbl={'enabled':'Enabled','disabled':'Disabled','enabledForReportingButNotEnforced':'Report only'};
+    const tbody=document.getElementById('body-ca');tbody.innerHTML='';
+    ps.forEach((p,i)=>{
+      const sid='cad'+i;
+      const inc=p.conditions?.users?.includeUsers||[],grps=p.conditions?.users?.includeGroups||[];
+      const uLbl=inc.includes('All')?'All users':grps.length?grps.length+' groups':inc.length?inc.length+' users':'—';
+      const apps=p.conditions?.applications?.includeApplications||[];
+      const aLbl=apps.includes('All')?'All apps':apps.includes('None')?'None':apps.length?apps.length+' apps':'—';
+      const plat=p.conditions?.platforms?.includePlatforms||[];
+      const pLbl=plat.includes('all')?'All':plat.map(x=>PLAT_NAMES[x]||x).join(', ')||'Any';
+      const grants=p.grantControls?.builtInControls||[];
+      const gLbl=grants.length?grants.map(fmtGrant).join(', '):'—';
+      const tr=document.createElement('tr');tr.className='ca-row';
+      tr.innerHTML='<td><span class="exp">▶</span></td><td><strong>'+esc(p.displayName)+'</strong></td><td><span class="'+(sCls[p.state]||'bdg neutral')+'">'+esc(sLbl[p.state]||p.state)+'</span></td><td>'+esc(uLbl)+'</td><td>'+esc(aLbl)+'</td><td>'+esc(pLbl)+'</td><td>'+esc(gLbl)+'</td>';
+      tr.onclick=()=>toggleCA(tr,sid,p);tbody.appendChild(tr);
+      const dr=document.createElement('tr');dr.className='ca-det';dr.id=sid;
+      dr.innerHTML='<td colspan="7"><div class="ca-det-inner" id="'+sid+'-i"></div></td>';
+      tbody.appendChild(dr);
+    });
+    document.getElementById('tbl-ca').style.display='table';
+  }catch(e){permErr('ca','bdg-ca','kv-ca','ks-ca','Policy.Read.All',e.message)}
+}
+
+function fmtGrant(g){return({'mfa':'Require MFA','compliantDevice':'Compliant device','domainJoinedDevice':'Domain joined','approvedApplication':'Approved app','block':'Block'})[g]||g}
+
+function toggleCA(tr,sid,p){
+  tr.classList.toggle('open');
+  const dr=document.getElementById(sid);
+  if(dr.style.display==='table-row'){dr.style.display='none';return}
+  dr.style.display='table-row';
+  const c=p.conditions||{},g=p.grantControls||{},s=p.sessionControls||{},u=c.users||{},a=c.applications||{},pl=c.platforms||{};
+  function chips(arr,fn){if(!arr?.length)return'<span style="color:var(--text3);font-size:11px">None</span>';return arr.map(x=>'<span class="ca-chip">'+esc(fn?fn(x):x)+'</span>').join('')}
+  const secs=[
+    {t:'Users included',    v:chips(u.includeUsers)},
+    {t:'Users excluded',    v:chips(u.excludeUsers)},
+    {t:'Groups included',   v:chips(u.includeGroups)},
+    {t:'Groups excluded',   v:chips(u.excludeGroups)},
+    {t:'Apps included',     v:chips(a.includeApplications,x=>APP_NAMES[x]||x)},
+    {t:'Apps excluded',     v:chips(a.excludeApplications,x=>APP_NAMES[x]||x)},
+    {t:'Platforms',         v:chips(pl.includePlatforms,x=>PLAT_NAMES[x]||x)},
+    {t:'Grant controls',    v:chips(g.builtInControls,fmtGrant)+(g.operator?'<span class="ca-chip" style="background:var(--blue-lt);color:var(--blue)">Operator: '+esc(g.operator)+'</span>':'')},
+    {t:'Sign-in frequency', v:s.signInFrequency?.isEnabled?(s.signInFrequency.value+' '+s.signInFrequency.type):'Disabled'},
+    {t:'Persistent browser',v:s.persistentBrowser?.isEnabled?s.persistentBrowser.mode:'Disabled'},
+    {t:'App enforced',      v:s.applicationEnforcedRestrictions?.isEnabled?'Enabled':'Disabled'},
+    {t:'Cloud app security',v:s.cloudAppSecurity?.isEnabled?(s.cloudAppSecurity.cloudAppSecurityType||'Enabled'):'Disabled'},
+  ];
+  document.getElementById(sid+'-i').innerHTML=secs.map(s=>'<div class="ca-group"><div class="ca-group-lbl">'+esc(s.t)+'</div><div class="ca-chips">'+s.v+'</div></div>').join('');
+}
+
+// ── AUTH METHODS ──────────────────────────────────────────────────────
+async function loadMFA(){
+  try{
+    const data=await gFetch('/policies/authenticationMethodsPolicy',true);
+    hide('ld-mfa');
+    const methods=data.authenticationMethodConfigurations||[];
+    BP_DATA.mfaMethods=methods;
+    document.getElementById('kv-mfa').textContent=enabled;
+    document.getElementById('ks-mfa').textContent='of '+methods.length;
+    document.getElementById('bdg-mfa').textContent=enabled+'/'+methods.length+' enabled';
+    setCount('tc-mfa',enabled+'/'+methods.length);
+    if(!methods.length){show('emp-mfa');return}
+    const names={'MicrosoftAuthenticatorAuthenticationMethodConfiguration':'Microsoft Authenticator','FidoAuthenticationMethodConfiguration':'FIDO2 Security Keys','SmsAuthenticationMethodConfiguration':'SMS','TemporaryAccessPassAuthenticationMethodConfiguration':'Temp Access Pass','SoftwareOathAuthenticationMethodConfiguration':'Software OATH / TOTP','VoiceAuthenticationMethodConfiguration':'Voice Call','EmailAuthenticationMethodConfiguration':'Email OTP','X509CertificateAuthenticationMethodConfiguration':'Certificate-Based Auth','HardwareOathAuthenticationMethodConfiguration':'Hardware OATH Token'};
+    const grid=document.getElementById('grid-mfa');
+    grid.innerHTML=methods.map(m=>{const on=m.state==='enabled';const key=(m['@odata.type']||'').replace('#microsoft.graph.','');const nm=names[key]||m.id||key;return'<div class="mth-cell"><span class="mth-name">'+esc(nm)+'</span><span class="mth-st"><span class="dot '+(on?'on':'off')+'"></span><span style="color:'+(on?'var(--green)':'var(--text3)')+'">'+( on?'Enabled':'Disabled')+'</span></span></div>'}).join('');
+    grid.style.display='grid';
+  }catch(e){permErr('mfa','bdg-mfa','kv-mfa','ks-mfa','Policy.Read.All',e.message)}
+}
+
+// ── USERS ─────────────────────────────────────────────────────────────
+async function loadUsers(){
+  try{
+    const data=await gFetch('/users?$select=displayName,userPrincipalName,userType,accountEnabled,createdDateTime&$top=100&$orderby=displayName');
+    hide('ld-users');
+    const users=data.value||[];
+    BP_DATA.users=users;
+    document.getElementById('kv-users').textContent=users.length;
+    document.getElementById('ks-users').textContent=disabled+' disabled';
+    document.getElementById('bdg-users').textContent=users.length+' users';
+    setCount('tc-users',users.length);
+    if(!users.length){show('emp-users');return}
+    document.getElementById('body-users').innerHTML=users.map(u=>{
+      const guest=(u.userType||'').toLowerCase()==='guest';
+      const enabled=u.accountEnabled!==false;
+      return '<tr><td><div class="cell-name">'+esc(u.displayName||'—')+'</div></td><td class="mono">'+esc(u.userPrincipalName||'—')+'</td><td>'+(guest?'<span class="bdg amber">Guest</span>':'<span class="bdg neutral">Member</span>')+'</td><td><span class="'+(enabled?'bdg green':'bdg red')+'">'+(enabled?'Enabled':'Disabled')+'</span></td><td class="mono">'+fmtDate(u.createdDateTime)+'</td></tr>';
+    }).join('');
+    document.getElementById('tbl-users').style.display='table';
+  }catch(e){permErr('users','bdg-users','kv-users','ks-users','User.Read.All',e.message)}
+}
+
+// ── DEVICES ───────────────────────────────────────────────────────────
+async function loadDevices(){
+  try{
+    const data=await gFetch('/devices?$select=displayName,operatingSystem,operatingSystemVersion,isCompliant,trustType,approximateLastSignInDateTime&$top=100&$orderby=displayName');
+    hide('ld-devices');
+    const devs=data.value||[];
+    const compliant=devs.filter(d=>d.isCompliant).length;
+    document.getElementById('bdg-devices').textContent=devs.length+' devices';
+    setCount('tc-devices',devs.length);
+    if(!devs.length){show('emp-devices');return}
+    const trustMap={'AzureAd':'Entra Joined','ServerAd':'Hybrid Joined','Workplace':'Registered'};
+    document.getElementById('body-devices').innerHTML=devs.map(d=>{
+      const comp=d.isCompliant===true?'<span class="bdg green">Compliant</span>':d.isCompliant===false?'<span class="bdg red">Non-compliant</span>':'<span class="bdg neutral">Unknown</span>';
+      return '<tr><td><div class="cell-name">'+esc(d.displayName||'—')+'</div></td><td>'+esc((d.operatingSystem||'—')+(d.operatingSystemVersion?' '+d.operatingSystemVersion:''))+'</td><td><span class="bdg blue">'+esc(trustMap[d.trustType]||d.trustType||'—')+'</span></td><td>'+comp+'</td><td class="mono">'+fmtDate(d.approximateLastSignInDateTime)+'</td></tr>';
+    }).join('');
+    document.getElementById('tbl-devices').style.display='table';
+  }catch(e){permErr('devices','bdg-devices',null,null,'Directory.Read.All',e.message)}
+}
+
+// ── APPS ──────────────────────────────────────────────────────────────
+async function loadApps(){
+  try{
+    const data=await gFetch('/servicePrincipals?$select=displayName,appId,publisherName,accountEnabled,servicePrincipalType&$filter=servicePrincipalType eq \'Application\'&$top=100&$orderby=displayName');
+    hide('ld-apps');
+    const apps=data.value||[];
+    document.getElementById('bdg-apps').textContent=apps.length+' apps';
+    setCount('tc-apps',apps.length);
+    if(!apps.length){show('emp-apps');return}
+    document.getElementById('body-apps').innerHTML=apps.map(a=>{
+      const enabled=a.accountEnabled!==false;
+      return '<tr><td><div class="cell-name">'+esc(a.displayName||'—')+'</div></td><td class="mono" style="font-size:10px">'+esc((a.appId||'').substring(0,18)+'…')+'</td><td>'+esc(a.publisherName||'—')+'</td><td><span class="'+(enabled?'bdg green':'bdg neutral')+'">'+(enabled?'Enabled':'Disabled')+'</span></td></tr>';
+    }).join('');
+    document.getElementById('tbl-apps').style.display='table';
+  }catch(e){permErr('apps','bdg-apps',null,null,'Directory.Read.All',e.message)}
+}
+
+// ── GROUPS ────────────────────────────────────────────────────────────
+async function loadGroups(){
+  try{
+    const data=await gFetch('/groups?$select=displayName,groupTypes,mail,membershipRule,createdDateTime,members&$top=100&$orderby=displayName');
+    hide('ld-groups');
+    const groups=data.value||[];
+    document.getElementById('bdg-groups').textContent=groups.length+' groups';
+    setCount('tc-groups',groups.length);
+    if(!groups.length){show('emp-groups');return}
+
+    // Fetch member counts in batches of 10
+    const counts={};
+    const chunks=[];
+    for(let i=0;i<Math.min(groups.length,50);i+=10)chunks.push(groups.slice(i,i+10));
+    for(const chunk of chunks){
+      await Promise.all(chunk.map(async g=>{
+        try{const r=await gFetch('/groups/'+g.id+'/members/$count',false);counts[g.id]=r}catch(e){counts[g.id]='—'}
+      }));
+    }
+
+    document.getElementById('body-groups').innerHTML=groups.map(g=>{
+      const isDynamic=(g.groupTypes||[]).includes('DynamicMembership');
+      const isM365=(g.groupTypes||[]).includes('Unified');
+      const typeLbl=isM365?'<span class="bdg blue">M365</span>':isDynamic?'<span class="bdg purple">Dynamic</span>':'<span class="bdg neutral">Security</span>';
+      return '<tr><td><div class="cell-name">'+esc(g.displayName||'—')+'</div></td><td>'+typeLbl+'</td><td>'+esc(counts[g.id]??'—')+'</td><td class="mono">'+esc(g.mail||'—')+'</td><td class="mono">'+fmtDate(g.createdDateTime)+'</td></tr>';
+    }).join('');
+    document.getElementById('tbl-groups').style.display='table';
+  }catch(e){permErr('groups','bdg-groups',null,null,'Directory.Read.All',e.message)}
+}
+
+// ── ADMIN ROLES ───────────────────────────────────────────────────────
+const KEY_ROLES=['Global Administrator','Security Administrator','Privileged Role Administrator','User Administrator','Exchange Administrator','SharePoint Administrator','Compliance Administrator','Conditional Access Administrator','Authentication Administrator','Cloud Application Administrator'];
+
+async function loadAdmins(){
+  try{
+    const rolesData=await gFetch('/directoryRoles?$select=id,displayName');
+    const roles=(rolesData.value||[]).filter(r=>KEY_ROLES.includes(r.displayName));
+    const results=await Promise.all(roles.slice(0,10).map(async role=>{
+      try{const m=await gFetch('/directoryRoles/'+role.id+'/members?$select=displayName,userPrincipalName,userType');return{role:role.displayName,members:m.value||[]}}
+      catch(e){return{role:role.displayName,members:[]}}
+    }));
+    const rows=results.flatMap(r=>r.members.map(m=>({role:r.role,member:m})));
+    BP_DATA.adminRows=results.flatMap(r=>r.members.map(m=>({role:r.role,...m})));
+
+    // Update all admin elements
+    ['admins','admins-ov'].forEach(key=>{
+      hide('ld-'+key);
+      document.getElementById('kv-admins')&&(document.getElementById('kv-admins').textContent=rows.length);
+      document.getElementById('ks-admins')&&(document.getElementById('ks-admins').textContent=roles.length+' roles');
+      const bdg=document.getElementById('bdg-'+key);if(bdg)bdg.textContent=rows.length+' members';
+      setCount('tc-admins',rows.length);
+      if(!rows.length){show('emp-'+key);return}
+      const tbody=document.getElementById('body-'+key);
+      if(!tbody)return;
+      tbody.innerHTML=rows.map(({role,member})=>{
+        const guest=(member.userType||'').toLowerCase()==='guest';
+        return '<tr><td><div class="cell-name">'+esc(member.displayName||'—')+'</div><div class="cell-sub">'+esc(member.userPrincipalName||'')+'</div></td><td><span class="bdg green" style="font-size:10px">'+esc(role)+'</span></td><td>'+(guest?'<span class="bdg amber">Guest</span>':'<span class="bdg neutral">Member</span>')+'</td></tr>';
+      }).join('');
+      document.getElementById('tbl-'+key).style.display='table';
+    });
+  }catch(e){
+    ['admins','admins-ov'].forEach(key=>permErr(key,'bdg-'+key,'kv-admins','ks-admins','Directory.Read.All',e.message));
+  }
+}
+
+// ── GUESTS ────────────────────────────────────────────────────────────
+async function loadGuests(){
+  try{
+    const data=await gFetch("/users?$filter=userType eq 'Guest'&$select=displayName,mail,userPrincipalName,externalUserState,createdDateTime&$top=100&$orderby=displayName");
+    const users=data.value||[];
+    BP_DATA.guests=users;
+    const pending=users.filter(u=>u.externalUserState==='PendingAcceptance').length;
+    const stateCls={'Accepted':'bdg green','PendingAcceptance':'bdg amber'};
+    const rowHtml=users.map(u=>'<tr><td>'+esc(u.displayName||'—')+'</td><td class="mono">'+esc(u.mail||u.userPrincipalName||'—')+'</td><td class="mono">'+fmtDate(u.createdDateTime)+'</td><td><span class="'+(stateCls[u.externalUserState]||'bdg neutral')+'">'+esc(u.externalUserState||'—')+'</span></td></tr>').join('');
+    const rowHtmlOv=users.slice(0,10).map(u=>'<tr><td>'+esc(u.displayName||'—')+'</td><td class="mono">'+esc(u.mail||u.userPrincipalName||'—')+'</td><td><span class="'+(stateCls[u.externalUserState]||'bdg neutral')+'">'+esc(u.externalUserState||'—')+'</span></td></tr>').join('');
+
+    ['guests','guests-ov'].forEach(key=>{
+      hide('ld-'+key);
+      const bdg=document.getElementById('bdg-'+key);if(bdg)bdg.textContent=users.length+' guests';
+      setCount('tc-guests',users.length);
+      const tbody=document.getElementById('body-'+key);
+      if(!tbody)return;
+      if(!users.length){show('emp-'+key);return}
+      tbody.innerHTML=(key==='guests-ov'?rowHtmlOv:rowHtml);
+      const tbl=document.getElementById('tbl-'+key);if(tbl)tbl.style.display='table';
+    });
+  }catch(e){
+    ['guests','guests-ov'].forEach(key=>permErr(key,'bdg-'+key,null,null,'User.Read.All',e.message));
+  }
+}
+
+// ── SECURE SCORE ──────────────────────────────────────────────────────
+async function loadScore(){
+  try{
+    const [scoreData,ctrlData]=await Promise.all([
+      gFetch('/security/secureScores?$top=1'),
+      gFetch('/security/secureScoreControlProfiles?$top=100')
+    ]);
+    hide('ld-score');hide('ld-score-recs');
+
+    const score=scoreData.value?.[0];
+    if(score){
+      const cur=Math.round(score.currentScore||0);
+      const max=Math.round(score.maxScore||0);
+      const pct=max>0?Math.round(cur/max*100):0;
+      BP_DATA.scorePct=pct;
+      updateOvScore(cur,max);
+      document.getElementById('score-cur').textContent=cur;
+      document.getElementById('score-max').textContent='/ '+max;
+      document.getElementById('score-pct').textContent=pct+'% of max score';
+      const circ=2*Math.PI*50;
+      setTimeout(()=>{document.getElementById('score-ring-fill').style.strokeDashoffset=circ*(1-pct/100);},100);
+      // Color ring by score
+      const color=pct>=80?'#107c10':pct>=50?'#0078d4':'#a4262c';
+      document.getElementById('score-ring-fill').style.stroke=color;
+      show('score-ring-wrap');
+    }
+
+    const ctrls=ctrlData.value||[];
+    const notDone=ctrls.filter(c=>c.implementationStatus!=='implemented'&&c.userImpact!=='none').sort((a,b)=>(b.maxScore||0)-(a.maxScore||0));
+    document.getElementById('bdg-score').textContent=notDone.length+' actions';
+    setCount('tc-score',notDone.length);
+
+    if(!notDone.length){show('emp-score');return}
+
+    const catColor={'Identity':'blue','Data':'purple','Device':'teal','Apps':'orange','Infrastructure':'green'};
+    const maxPts=notDone[0]?.maxScore||1;
+    const list=document.getElementById('list-score');
+    list.innerHTML=notDone.slice(0,30).map(c=>{
+      const pts=c.maxScore||0;
+      const cat=c.controlCategory||'Other';
+      const pct=Math.round(pts/maxPts*100);
+      const barColor=catColor[cat]?`var(--${catColor[cat]})`:'var(--blue)';
+      return '<div class="rec-item"><span class="rec-cat"><span class="bdg '+(catColor[cat]||'neutral')+'" style="font-size:10px">'+esc(cat)+'</span></span><span class="rec-name">'+esc(c.title||'—')+'</span><div class="rec-bar-wrap"><div class="rec-bar" style="width:'+pct+'%;background:'+barColor+'"></div></div><span class="rec-pts">+'+pts+' pts</span></div>';
+    }).join('');
+    list.style.display='block';
+  }catch(e){
+    hide('ld-score');hide('ld-score-recs');
+    const el=document.getElementById('err-score');
+    if(el){el.innerHTML='<div class="perm-bar">⚠ '+esc(e.message)+'<br><small>Requires SecurityEvents.Read.All or may not be available on free tier.</small></div>';el.style.display='block'}
+    document.getElementById('kv-score').textContent='—';
+    document.getElementById('ks-score').textContent='Not available';
+  }
+}
+
+// ── GREETING ─────────────────────────────────────────────────────────
+function setGreeting(name){
+  const hr=new Date().getHours();
+  const g=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  document.getElementById('ov-hello').textContent=g+', '+name.split(' ')[0]+'!';
+  document.getElementById('ov-greeting').style.display='block';
+}
+
+// ── OVERVIEW SCORE BAR ────────────────────────────────────────────────
+function updateOvScore(cur,max){
+  const pct=max>0?Math.round(cur/max*100):0;
+  document.getElementById('ov-score-pct').textContent=pct+'%';
+  document.getElementById('ov-score-pts').textContent=cur+' / '+max+' pts';
+  setTimeout(()=>{document.getElementById('ov-score-bar').style.width=pct+'%'},100);
+  document.getElementById('kv-score').textContent=pct+'%';
+  document.getElementById('ks-score').textContent=cur+' / '+max+' pts';
+  document.getElementById('ov-sub').textContent='Your tenant security overview. Secure Score: '+pct+'% ('+cur+' / '+max+' points).';
+}
+
+// ── SECURITY EVENTS ───────────────────────────────────────────────────
+// High-severity operations to watch for (free-tier: uses /auditLogs if available,
+// falls back to graph-derived heuristics from service principals & directory roles)
+const HIGH_SEV_OPS=[
+  {cat:'Application consent', ops:['Consent to application','Add delegated permission grant','Add app role assignment to service principal'],icon:'consent',cls:'red'},
+  {cat:'New application',     ops:['Add application','Add service principal'],                                                                  icon:'app',   cls:'orange'},
+  {cat:'Role assignment',     ops:['Add member to role','Remove member from role','Add eligible member to role'],                               icon:'role',  cls:'purple'},
+  {cat:'Guest invite',        ops:['Invite external user','Redeem external user invite'],                                                       icon:'guest', cls:'amber'},
+  {cat:'CA policy change',    ops:['Add conditional access policy','Update conditional access policy','Delete conditional access policy'],       icon:'policy',cls:'blue'},
+  {cat:'MFA change',          ops:['Update authentication method','Disable strong authentication','Update user'],                               icon:'other', cls:'other'},
+];
+const HIGH_SEV_FLAT=HIGH_SEV_OPS.flatMap(h=>h.ops.map(op=>({op,icon:h.icon,cls:h.cls,cat:h.cat})));
+
+async function loadSecurityEvents(){
+  const listEl=document.getElementById('list-events');
+  try{
+    // Try audit logs first (requires AuditLog.Read.All)
+    const data=await gFetch('/auditLogs/directoryAudits?$top=50&$orderby=activityDateTime desc',true);
+    const logs=data.value||[];
+    // Filter to high-severity ops
+    const filtered=logs.filter(l=>{
+      const act=l.activityDisplayName||'';
+      return HIGH_SEV_FLAT.some(h=>act.toLowerCase().includes(h.op.toLowerCase()));
+    });
+    hide('ld-events');
+    document.getElementById('bdg-events').textContent=filtered.length+' events';
+    if(!filtered.length){show('emp-events');return}
+    listEl.innerHTML=filtered.map(l=>{
+      const act=l.activityDisplayName||'—';
+      const match=HIGH_SEV_FLAT.find(h=>act.toLowerCase().includes(h.op.toLowerCase()))||{icon:'other',cls:'other',cat:'Activity'};
+      const by=l.initiatedBy?.user?.displayName||l.initiatedBy?.user?.userPrincipalName||l.initiatedBy?.app?.displayName||'System';
+      const target=(l.targetResources||[]).map(t=>t.displayName||t.userPrincipalName||'').filter(Boolean).join(', ')||'—';
+      const time=l.activityDateTime?new Date(l.activityDateTime).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+      return evRow(match.icon,match.cls,act,by+' → '+target,'<span class="bdg '+match.cls+'" style="font-size:10px">'+esc(match.cat)+'</span>',time);
+    }).join('');
+    listEl.style.display='block';
+  }catch(auditErr){
+    // AuditLog not available — synthesize events from directory changes instead
+    hide('ld-events');
+    try{
+      // Fetch recently created service principals (new app registrations/consents)
+      const [sps,guests]=await Promise.all([
+        gFetch('/servicePrincipals?$select=displayName,createdDateTime,appId&$orderby=createdDateTime desc&$top=15'),
+        gFetch("/users?$filter=userType eq 'Guest'&$select=displayName,mail,createdDateTime&$orderby=createdDateTime desc&$top=10")
+      ]);
+      const events=[];
+      (sps.value||[]).forEach(sp=>{if(sp.createdDateTime)events.push({icon:'app',cls:'orange',cat:'New application',title:'New app: '+esc(sp.displayName||sp.appId||'—'),detail:'Service principal created',time:sp.createdDateTime})});
+      (guests.value||[]).forEach(g=>{if(g.createdDateTime)events.push({icon:'guest',cls:'amber',cat:'Guest invite',title:'Guest invited: '+esc(g.displayName||'—'),detail:esc(g.mail||'—'),time:g.createdDateTime})});
+      events.sort((a,b)=>new Date(b.time)-new Date(a.time));
+      document.getElementById('bdg-events').textContent=events.length+' recent';
+      if(!events.length){
+        listEl.innerHTML='<div style="padding:14px 18px;font-size:12px;color:var(--text3)">AuditLog.Read.All not granted — showing recent app & guest activity instead. Add <strong>AuditLog.Read.All</strong> to your App Registration for full event history.</div>';
+        listEl.style.display='block';return;
+      }
+      listEl.innerHTML='<div style="padding:10px 18px 6px;font-size:11px;color:var(--amber-text);background:var(--amber-lt);border-bottom:1px solid var(--border)">⚠ AuditLog.Read.All not granted — showing recent app & guest activity only. Add the permission for full event history.</div>'
+        +events.map(e=>evRow(e.icon,e.cls,e.title,e.detail,'<span class="bdg '+e.cls+'" style="font-size:10px">'+esc(e.cat)+'</span>',new Date(e.time).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))).join('');
+      listEl.style.display='block';
+    }catch(e2){
+      document.getElementById('bdg-events').textContent='Error';
+      listEl.innerHTML='<div class="perm-bar" style="margin:14px 18px">⚠ Could not load security events.<br><small>'+esc(e2.message)+'</small></div>';
+      listEl.style.display='block';
+    }
+  }
+}
+
+function evRow(icon,cls,title,detail,badgeHtml,time){
+  const icons={
+    consent:'<path d="M9 1a7 7 0 100 14A7 7 0 009 1zM8 5h2v5H8V5zm0 6h2v2H8v-2z"/>',
+    app:    '<path d="M0 1.5A1.5 1.5 0 011.5 0h13A1.5 1.5 0 0116 1.5v13a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 010 14.5v-13z"/>',
+    role:   '<path fill-rule="evenodd" d="M8.533.133a1.75 1.75 0 00-1.066 0l-5.25 1.68A1.75 1.75 0 001 3.48V8c0 3.082 2.005 5.284 4.646 6.63.824.42 1.884.42 2.708 0C11.995 13.284 14 11.082 14 8V3.48a1.75 1.75 0 00-1.217-1.667L8.533.133z" clip-rule="evenodd"/>',
+    guest:  '<path d="M8 8a3 3 0 100-6 3 3 0 000 6z"/>',
+    policy: '<path d="M8 1a2 2 0 012 2v2H6V3a2 2 0 012-2zm3 4V3a3 3 0 10-6 0v2H4a1 1 0 00-1 1v7a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1h-1z"/>',
+    other:  '<path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 5h2v5H7V5zm0 6h2v2H7v-2z"/>',
+  };
+  return`<div class="ev-item"><div class="ev-icon ${icon}"><svg viewBox="0 0 16 16" fill="currentColor">${icons[icon]||icons.other}</svg></div><div class="ev-body"><div class="ev-title">${title}</div><div class="ev-detail">${detail}</div></div><div class="ev-right">${badgeHtml}<span class="ev-time">${time}</span></div></div>`;
+}
+
+// ── BEST PRACTICE CHECKS ──────────────────────────────────────────────
+// Each check uses data already loaded by other functions (no extra API calls).
+// Results are stored in a shared state object populated by each loader.
+const BP_STATE={caLoaded:false,mfaLoaded:false,usersLoaded:false,adminsLoaded:false,guestsLoaded:false,scoreLoaded:false};
+const BP_DATA={caPolicies:[],mfaMethods:[],users:[],adminRows:[],guests:[],scorePct:null};
+
+function runBestPracticeChecks(){
+  hide('ld-bp');
+  const checks=[
+    checkMfaEnabled(),
+    checkCAExists(),
+    checkCAAllUsers(),
+    checkGlobalAdminCount(),
+    checkGuestUsers(),
+    checkLegacyAuth(),
+    checkSmsOnly(),
+    checkSecureScore(),
+  ];
+  const pass=checks.filter(c=>c.status==='pass').length;
+  const fail=checks.filter(c=>c.status==='fail').length;
+  const warn=checks.filter(c=>c.status==='warn').length;
+  document.getElementById('bdg-bp').textContent=pass+' pass · '+fail+' fail';
+  document.getElementById('bdg-bp').className='bdg '+(fail>0?'red':warn>0?'amber':'green');
+  const el=document.getElementById('list-bp');
+  el.innerHTML=checks.map(c=>{
+    const icons={
+      pass:'<path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/>',
+      fail:'<path d="M4.646 4.646a.5.5 0 01.708 0L8 7.293l2.646-2.647a.5.5 0 01.708.708L8.707 8l2.647 2.646a.5.5 0 01-.708.708L8 8.707l-2.646 2.647a.5.5 0 01-.708-.708L7.293 8 4.646 5.354a.5.5 0 010-.708z"/>',
+      warn:'<path d="M8.982 1.566a1.13 1.13 0 00-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 01-1.1 0L7.1 5.995A.905.905 0 018 5zm.002 6a1 1 0 110 2 1 1 0 010-2z"/>',
+      info:'<path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a1 1 0 110 2 1 1 0 010-2zm0 3a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/>',
+      load:'<path d="M8 1a7 7 0 100 14A7 7 0 008 1z"/>',
+    };
+    return`<div class="bp-item"><div class="bp-icon ${c.status}"><svg viewBox="0 0 16 16" fill="currentColor">${icons[c.status]||icons.info}</svg></div><div class="bp-text"><div class="bp-name">${esc(c.name)}</div><div class="bp-desc">${esc(c.desc)}</div></div><span class="bdg ${c.status==='pass'?'green':c.status==='fail'?'red':c.status==='warn'?'amber':'neutral'}" style="font-size:10px;flex-shrink:0">${c.status==='pass'?'Pass':c.status==='fail'?'Fail':c.status==='warn'?'Review':'Info'}</span></div>`;
+  }).join('');
+  el.style.display='block';
+}
+
+function checkMfaEnabled(){
+  if(!BP_DATA.mfaMethods.length)return{name:'MFA enabled for users',desc:'Could not verify — auth methods data unavailable.',status:'info'};
+  const auth=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('MicrosoftAuthenticator'));
+  const fido=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('Fido'));
+  const totp=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('SoftwareOath'));
+  const anyStrong=[auth,fido,totp].some(m=>m?.state==='enabled');
+  return anyStrong
+    ?{name:'Strong MFA method enabled',desc:'Microsoft Authenticator, FIDO2, or TOTP is enabled in your tenant.',status:'pass'}
+    :{name:'No strong MFA method enabled',desc:'Enable Microsoft Authenticator, FIDO2 Security Keys, or Software OATH for phishing-resistant MFA.',status:'fail'};
+}
+
+function checkCAExists(){
+  if(!BP_DATA.caPolicies.length)return{name:'Conditional Access policies exist',desc:'No CA policies found or Policy.Read.All not granted.',status:'fail'};
+  const enabled=BP_DATA.caPolicies.filter(p=>p.state==='enabled');
+  return enabled.length>0
+    ?{name:'Conditional Access policies active',desc:enabled.length+' enabled CA polic'+(enabled.length===1?'y':'ies')+' found.',status:'pass'}
+    :{name:'No enabled Conditional Access policies',desc:'All CA policies are disabled or in report-only mode. Enable at least one policy.',status:'warn'};
+}
+
+function checkCAAllUsers(){
+  if(!BP_DATA.caPolicies.length)return{name:'CA policy covers all users',desc:'Cannot verify — no CA policies loaded.',status:'info'};
+  const hasAllUsers=BP_DATA.caPolicies.some(p=>p.state==='enabled'&&(p.conditions?.users?.includeUsers||[]).includes('All'));
+  return hasAllUsers
+    ?{name:'CA policy covers all users',desc:'At least one enabled policy applies to all users.',status:'pass'}
+    :{name:'No CA policy covers all users',desc:'Consider a baseline CA policy (e.g. require MFA) that targets all users.',status:'warn'};
+}
+
+function checkGlobalAdminCount(){
+  const gas=BP_DATA.adminRows.filter(r=>r.role==='Global Administrator');
+  if(!gas.length)return{name:'Global Administrator count',desc:'Could not verify — admin data unavailable.',status:'info'};
+  return gas.length<=3
+    ?{name:'Global Administrator count acceptable',desc:gas.length+' Global Admin'+(gas.length===1?'':'s')+' found. Best practice: 2–4 break-glass accounts.',status:'pass'}
+    :{name:'Too many Global Administrators',desc:gas.length+' Global Admins found. Microsoft recommends fewer than 5. Use specific admin roles instead.',status:'fail'};
+}
+
+function checkGuestUsers(){
+  const pending=BP_DATA.guests.filter(g=>g.externalUserState==='PendingAcceptance');
+  if(pending.length>0)return{name:'Pending guest invitations',desc:pending.length+' guest invitation'+(pending.length===1?'':'s')+' still pending. Review and revoke stale invites.',status:'warn'};
+  if(BP_DATA.guests.length>50)return{name:'High guest user count',desc:BP_DATA.guests.length+' guest users. Review regularly and remove inactive guests.',status:'warn'};
+  return{name:'Guest user hygiene',desc:BP_DATA.guests.length+' guest users, none pending. Keep reviewing quarterly.',status:'pass'};
+}
+
+function checkLegacyAuth(){
+  if(!BP_DATA.caPolicies.length)return{name:'Legacy authentication blocked',desc:'Cannot verify — no CA policies loaded.',status:'info'};
+  const blocks=BP_DATA.caPolicies.some(p=>p.state==='enabled'&&(p.conditions?.clientAppTypes||[]).some(t=>['exchangeActiveSync','other'].includes(t))&&(p.grantControls?.builtInControls||[]).includes('block'));
+  return blocks
+    ?{name:'Legacy authentication blocked',desc:'A CA policy blocks legacy auth clients (EAS / other). Good.',status:'pass'}
+    :{name:'Legacy authentication not explicitly blocked',desc:'Create a CA policy that blocks legacy auth clients to prevent credential spray attacks.',status:'warn'};
+}
+
+function checkSmsOnly(){
+  if(!BP_DATA.mfaMethods.length)return{name:'SMS-only MFA check',desc:'Cannot verify — auth methods unavailable.',status:'info'};
+  const sms=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('Sms'));
+  const authenticator=BP_DATA.mfaMethods.find(m=>(m['@odata.type']||'').includes('MicrosoftAuthenticator'));
+  if(sms?.state==='enabled'&&authenticator?.state!=='enabled')
+    return{name:'SMS is the only MFA method',desc:'SMS MFA is vulnerable to SIM-swap. Enable Microsoft Authenticator as a stronger alternative.',status:'warn'};
+  return{name:'SMS MFA not sole method',desc:'Stronger MFA methods are available alongside or instead of SMS.',status:'pass'};
+}
+
+function checkSecureScore(){
+  if(BP_DATA.scorePct===null)return{name:'Secure Score',desc:'Secure Score data unavailable — add SecurityEvents.Read.All permission.',status:'info'};
+  const pct=BP_DATA.scorePct;
+  return pct>=70
+    ?{name:'Secure Score above 70%',desc:'Current score: '+pct+'%. Good security posture. Continue working through improvement actions.',status:'pass'}
+    :pct>=40
+    ?{name:'Secure Score below 70%',desc:'Current score: '+pct+'%. Review the Secure Score tab for improvement actions.',status:'warn'}
+    :{name:'Secure Score critically low',desc:'Current score: '+pct+'%. Immediate action needed — check the Secure Score tab.',status:'fail'};
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')signIn()});
+</script>
+</body>
+</html>
