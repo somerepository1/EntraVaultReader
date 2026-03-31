@@ -10,10 +10,9 @@ Because EntraVault leverages a pre-configured multi-tenant application, it requi
 
 It literally takes 5 seconds to run:
 
-1. **Download** or clone the `index.html` file.
-2. **Open** `index.html` directly in your web browser (Edge, Chrome, Safari, etc.).
-3. **Sign in** with your Microsoft administrator account. 
-4. **Grant read permissions** (if prompted) to view your tenant's security posture.
+1. **Open the link**
+2. **Sign in** with your Microsoft administrator account. 
+3. **Grant read permissions** (if prompted) to view your tenant's security posture.
 
 *That's it. No App Registrations, no client secrets, and no infrastructure required.*
 
